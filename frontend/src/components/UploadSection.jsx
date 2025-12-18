@@ -1,9 +1,8 @@
 import React, { useState, useRef } from 'react'
 import { Upload, MapPin, Cloud, Activity } from 'lucide-react'
 import axios from 'axios'
+import { API_ENDPOINTS } from '../config'
 import './UploadSection.css'
-
-const API_URL = 'http://localhost:8000'
 
 function UploadSection({ onAnalysisComplete, onError, loading, setLoading }) {
   const [selectedImage, setSelectedImage] = useState(null)
