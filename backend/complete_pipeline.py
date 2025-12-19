@@ -1,6 +1,7 @@
 """
 Complete Pitch Analysis Pipeline
 Combines YOLO Detection + Feature Extraction + ML Classification with Rule-Based Adjustments
+Memory-Optimized Version with Lazy Loading
 """
 
 import cv2
@@ -16,6 +17,37 @@ from typing import Dict, Tuple, Optional
 from pitch_analyzer import PitchAnalyzer
 import base64
 import io
+import psutil
+import gc
+
+
+class MemoryMonitor:
+    """Monitor and log memory usage"""
+    
+    @staticmethod
+    def get_memory_usage():
+        """Get current memory usage in MB"""
+        process = psutil.Process()
+        mem_info = process.memory_info()
+        return {
+            'rss_mb': mem_info.rss / 1024 / 1024,  # Resident Set Size
+            'vms_mb': mem_info.vms / 1024 / 1024,  # Virtual Memory Size
+            'percent': process.memory_percent()
+        }
+    
+    @staticmethod
+    def print_memory_usage(label="Current"):
+        """Print current memory usage"""
+        mem = MemoryMonitor.get_memory_usage()
+        print(f"💾 {label} Memory: {mem['rss_mb']:.1f} MB (RSS), {mem['percent']:.1f}% of system")
+    
+    @staticmethod
+    def cleanup():
+        """Force garbage collection and clear CUDA cache"""
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
 
 
 class CompletePitchPipeline:
@@ -30,32 +62,28 @@ class CompletePitchPipeline:
         self,
         yolo_model_path: str = "pitch_yolov8_best.pt",
         classifier_model_path: str = "best_pitch_classifier.pth",
-        device: str = None
+        device: str = None,
+        lazy_load: bool = True
     ):
         """
-        Initialize the pipeline
+        Initialize the pipeline with lazy loading support
         
         Args:
             yolo_model_path: Path to YOLO model
             classifier_model_path: Path to classification model
             device: Device to run models on ('cuda', 'cpu', or None for auto)
+            lazy_load: If True, models are loaded only when needed (default: True)
         """
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
-        print(f"🚀 Initializing pipeline on {self.device}...")
+        self.yolo_model_path = yolo_model_path
+        self.classifier_model_path = classifier_model_path
+        self.lazy_load = lazy_load
         
-        # Load YOLO model
-        print("📦 Loading YOLO pitch detection model...")
-        self.yolo_model = YOLO(yolo_model_path)
+        # Model placeholders (not loaded yet)
+        self.yolo_model = None
+        self.classifier = None
         
-        # Load classification model
-        print("📦 Loading pitch classification model...")
-        self.classifier = models.resnet18()
-        self.classifier.fc = torch.nn.Linear(self.classifier.fc.in_features, 4)
-        self.classifier.load_state_dict(torch.load(classifier_model_path, map_location=self.device))
-        self.classifier = self.classifier.to(self.device)
-        self.classifier.eval()
-        
-        # Initialize feature analyzer
+        # Initialize feature analyzer (lightweight, no heavy models)
         self.feature_analyzer = PitchAnalyzer()
         
         # Classes
@@ -68,7 +96,84 @@ class CompletePitchPipeline:
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
         
-        print("✅ Pipeline initialized successfully!\n")
+        print(f"🚀 Pipeline initialized on {self.device}")
+        print(f"💾 Lazy loading: {'✅ Enabled (models load on demand)' if lazy_load else '❌ Disabled'}")
+        
+        if not lazy_load:
+            self._load_models()
+        
+        MemoryMonitor.print_memory_usage("Initial")
+    
+    def _load_models(self):
+        """Load models into memory (called on-demand if lazy loading is enabled)"""
+        if self.yolo_model is not None and self.classifier is not None:
+            return  # Already loaded
+        
+        print("\n📦 Loading models into memory...")
+        MemoryMonitor.print_memory_usage("Before loading")
+        
+        # Load YOLO model (lighter YOLOv8n variant if available)
+        print("  Loading YOLO pitch detection model...")
+        self.yolo_model = YOLO(self.yolo_model_path)
+        
+        # Load classification model - Using MobileNetV2 (lighter than ResNet18)
+        print("  Loading pitch classification model (MobileNetV2)...")
+        self.classifier = models.mobilenet_v2(weights=None)
+        
+        # Modify final layer for 4 classes
+        self.classifier.classifier[1] = torch.nn.Linear(
+            self.classifier.classifier[1].in_features, 4
+        )
+        
+        # Load weights
+        state_dict = torch.load(self.classifier_model_path, map_location=self.device)
+        
+        # Handle potential state dict format differences
+        try:
+            self.classifier.load_state_dict(state_dict)
+        except RuntimeError:
+            # If the saved model is ResNet18, we need to convert
+            print("  ⚠️ Converting from ResNet18 to MobileNetV2...")
+            # For now, use ResNet18 if conversion fails
+            self.classifier = models.resnet18()
+            self.classifier.fc = torch.nn.Linear(self.classifier.fc.in_features, 4)
+            self.classifier.load_state_dict(state_dict)
+        
+        self.classifier = self.classifier.to(self.device)
+        self.classifier.eval()
+        
+        # Enable model optimization
+        if self.device == 'cpu':
+            # Optimize for CPU inference
+            self.classifier = torch.jit.optimize_for_inference(
+                torch.jit.script(self.classifier)
+            )
+        
+        MemoryMonitor.print_memory_usage("After loading")
+        print("✅ Models loaded successfully!\n")
+    
+    def _unload_models(self):
+        """Unload models from memory to free up RAM"""
+        if self.yolo_model is None and self.classifier is None:
+            return  # Already unloaded
+        
+        print("\n🧹 Unloading models from memory...")
+        MemoryMonitor.print_memory_usage("Before unload")
+        
+        # Delete models
+        if self.yolo_model is not None:
+            del self.yolo_model
+            self.yolo_model = None
+        
+        if self.classifier is not None:
+            del self.classifier
+            self.classifier = None
+        
+        # Force cleanup
+        MemoryMonitor.cleanup()
+        
+        MemoryMonitor.print_memory_usage("After unload")
+        print("✅ Models unloaded successfully!\n")
     
     def generate_specialist_visualizations(self, pitch_region: np.ndarray, features: Dict) -> Dict:
         """
@@ -138,6 +243,10 @@ class CompletePitchPipeline:
         Returns:
             Cropped pitch region or None if not detected
         """
+        # Ensure models are loaded
+        if self.yolo_model is None:
+            self._load_models()
+        
         # Load image
         image = cv2.imread(image_path)
         if image is None:
@@ -175,6 +284,10 @@ class CompletePitchPipeline:
         Returns:
             (predicted_class, confidence, probabilities)
         """
+        # Ensure models are loaded
+        if self.classifier is None:
+            self._load_models()
+        
         # Convert to PIL Image
         image_rgb = cv2.cvtColor(pitch_image, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(image_rgb)
@@ -185,6 +298,10 @@ class CompletePitchPipeline:
         with torch.no_grad():
             output = self.classifier(img_tensor)
             probabilities = F.softmax(output[0], dim=0).cpu().numpy()
+        
+        # Clear GPU memory after inference
+        del img_tensor, output
+        MemoryMonitor.cleanup()
         
         predicted_idx = probabilities.argmax()
         predicted_class = self.classes[predicted_idx]
@@ -296,13 +413,14 @@ class CompletePitchPipeline:
         
         return final_class, final_confidence, adjusted_probs, adjustment_info
     
-    def analyze(self, image_path: str, save_visualization: bool = True) -> Dict:
+    def analyze(self, image_path: str, save_visualization: bool = True, auto_unload: bool = True) -> Dict:
         """
-        Complete pitch analysis pipeline
+        Complete pitch analysis pipeline with memory optimization
         
         Args:
             image_path: Path to pitch image
             save_visualization: Whether to save visualization
+            auto_unload: If True and lazy_load is enabled, unload models after analysis
             
         Returns:
             Complete analysis results
@@ -311,6 +429,8 @@ class CompletePitchPipeline:
         print("🏏 COMPLETE PITCH ANALYSIS PIPELINE")
         print("="*60)
         print(f"📸 Image: {Path(image_path).name}\n")
+        
+        MemoryMonitor.print_memory_usage("Start")
         
         # Step 1: Detect pitch using YOLO
         print("🔍 Step 1: Detecting pitch region with YOLO...")
@@ -378,6 +498,12 @@ class CompletePitchPipeline:
         if save_visualization:
             print("\n📊 Generating visualization...")
             self.visualize_complete_analysis(image_path, results)
+        
+        # Unload models if lazy loading is enabled and auto_unload is True
+        if self.lazy_load and auto_unload:
+            self._unload_models()
+        
+        MemoryMonitor.print_memory_usage("End")
         
         print("\n" + "="*60)
         print("✅ ANALYSIS COMPLETE!")

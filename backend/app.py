@@ -49,11 +49,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize pipeline
+# Initialize pipeline with lazy loading enabled for memory optimization
 print("🚀 Initializing Pitch Analysis Pipeline...")
 pipeline = CompletePitchPipeline(
     yolo_model_path="pitch_yolov8_best.pt",
-    classifier_model_path="best_pitch_classifier.pth"
+    classifier_model_path="best_pitch_classifier.pth",
+    lazy_load=True  # Enable lazy loading to reduce memory footprint
 )
 print("✅ Pipeline ready!")
 
