@@ -90,7 +90,7 @@ async def analyze_pitch(
         
         # Get pipeline and analyze
         pipe = get_pipeline()
-        analysis_result = pipe.analyze_complete(temp_path)
+        analysis_result = pipe.analyze(temp_path)
         
         # TODO: Add weather integration if include_weather=True
         weather_data = None
