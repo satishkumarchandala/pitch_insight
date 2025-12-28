@@ -55,7 +55,7 @@ function ResultsSection({ result, onReset }) {
           </div>
           <div>
             <h2 className="pitch-type">
-              {final_classification.prediction.replace('_', ' ').toUpperCase()}
+              {final_classification.prediction?.replace('_', ' ').toUpperCase() || 'Unknown'}
             </h2>
             <p className="confidence-text">
               {final_classification.confidence.toFixed(1)}% Confidence
@@ -99,7 +99,7 @@ function ResultsSection({ result, onReset }) {
             {Object.entries(final_classification.probabilities).map(([type, prob]) => (
               <div key={type} className="probability-item">
                 <div className="prob-header">
-                  <span className="prob-type">{type.replace('_', ' ')}</span>
+                  <span className="prob-type">{type?.replace('_', ' ') || type}</span>
                   <span className="prob-value">{(prob).toFixed(1)}%</span>
                 </div>
                 <div className="prob-bar">

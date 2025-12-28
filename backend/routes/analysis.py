@@ -102,10 +102,10 @@ async def analyze_pitch(
         response_data = {
             "success": True,
             "analysis_id": analysis_id,
-            "pitch_detection": analysis_result.get("detection", {}),
+            "pitch_detection": analysis_result.get("pitch_detection", {}),
             "features": analysis_result.get("features", {}),
-            "ml_classification": analysis_result.get("classification", {}),
-            "final_classification": analysis_result.get("final", {}),
+            "ml_classification": analysis_result.get("ml_classification", {}),
+            "final_classification": analysis_result.get("final_classification", {}),
             "weather": weather_data,
             "match_strategy": analysis_result.get("strategy", {}),
             "timestamp": datetime.utcnow().isoformat(),
