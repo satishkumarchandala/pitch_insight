@@ -6,8 +6,14 @@ Analyzes cricket pitch images using OpenCV
 import cv2
 import numpy as np
 from typing import Dict, Tuple, Optional
-import matplotlib.pyplot as plt
 from pathlib import Path
+
+# Optional matplotlib for visualization (not needed for API)
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
 
 
 class PitchAnalyzer:
@@ -356,6 +362,10 @@ class PitchAnalyzer:
         Args:
             save_path: Optional path to save visualization
         """
+        if not MATPLOTLIB_AVAILABLE:
+            print("⚠️ Matplotlib not available. Skipping visualization.")
+            return
+            
         if not self.features:
             print("No features to visualize. Run analyze() first.")
             return
