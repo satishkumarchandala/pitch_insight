@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Clock, Trash2, Eye, MapPin, Image as ImageIcon, CloudSun } from 'lucide-react';
 import './HistorySection.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 const HistorySection = ({ onViewDetails, authToken }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
