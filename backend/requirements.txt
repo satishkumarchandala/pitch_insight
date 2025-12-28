@@ -26,7 +26,7 @@ python-jose[cryptography]==3.3.0
 passlib==1.7.4
 
 # Payment Gateway
-razorpay==1.4.0
+razorpay>=1.4.1
 
 # AI Chatbot
 google-genai==0.3.0
