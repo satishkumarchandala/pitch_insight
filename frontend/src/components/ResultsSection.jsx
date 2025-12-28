@@ -3,15 +3,16 @@ import { ArrowLeft, Clock, Target, Activity, Droplets, Thermometer, Wind, CloudR
 import './ResultsSection.css'
 
 function ResultsSection({ result, onReset }) {
+  // Add safety checks for all destructured values
   const { 
-    final_classification, 
-    features, 
-    weather, 
-    match_strategy,
-    match_info,
-    processing_time,
-    ml_classification
-  } = result
+    final_classification = {}, 
+    features = {}, 
+    weather = null, 
+    match_strategy = {},
+    match_info = null,
+    processing_time = 0,
+    ml_classification = {}
+  } = result || {}
 
   const getPitchTypeColor = (type) => {
     const colors = {
@@ -58,7 +59,7 @@ function ResultsSection({ result, onReset }) {
               {final_classification.prediction?.replace('_', ' ').toUpperCase() || 'Unknown'}
             </h2>
             <p className="confidence-text">
-              {final_classification.confidence.toFixed(1)}% Confidence
+              {final_classification.confidence?.toFixed(1) || 0}% Confidence
             </p>
             {match_info && (
               <p className="match-format">
@@ -72,7 +73,7 @@ function ResultsSection({ result, onReset }) {
           <div 
             className="confidence-fill"
             style={{ 
-              width: `${final_classification.confidence}%`,
+              width: `${final_classification.confidence || 0}%`,
               background: getPitchTypeColor(final_classification.prediction)
             }}
           />
@@ -96,7 +97,7 @@ function ResultsSection({ result, onReset }) {
         <div className="card slide-in-left" style={{ '--delay': '0.2s' }}>
           <h3>📊 Classification Probabilities</h3>
           <div className="probabilities">
-            {Object.entries(final_classification.probabilities).map(([type, prob]) => (
+            {Object.entries(final_classification.probabilities || {}).map(([type, prob]) => (
               <div key={type} className="probability-item">
                 <div className="prob-header">
                   <span className="prob-type">{type?.replace('_', ' ') || type}</span>
@@ -126,9 +127,9 @@ function ResultsSection({ result, onReset }) {
                 <div className="feature-content">
                   <span className="feature-label">Grass Coverage</span>
                   <span className="feature-value">
-                    {features.grass_coverage.percentage.toFixed(1)}%
+                    {features.grass_coverage?.percentage?.toFixed(1) || 0}%
                   </span>
-                  <span className="feature-level">{features.grass_coverage.level}</span>
+                  <span className="feature-level">{features.grass_coverage?.level || 'Unknown'}</span>
                 </div>
               </div>
 
@@ -136,8 +137,8 @@ function ResultsSection({ result, onReset }) {
                 <div className="feature-icon cracks">⚡</div>
                 <div className="feature-content">
                   <span className="feature-label">Cracks</span>
-                  <span className="feature-value">{features.cracks.count}</span>
-                  <span className="feature-level">{features.cracks.severity}</span>
+                  <span className="feature-value">{features.cracks?.count || 0}</span>
+                  <span className="feature-level">{features.cracks?.severity || 'Unknown'}</span>
                 </div>
               </div>
 
@@ -145,8 +146,8 @@ function ResultsSection({ result, onReset }) {
                 <div className="feature-icon moisture">💧</div>
                 <div className="feature-content">
                   <span className="feature-label">Moisture</span>
-                  <span className="feature-value">{features.moisture.score.toFixed(0)}/100</span>
-                  <span className="feature-level">{features.moisture.level}</span>
+                  <span className="feature-value">{features.moisture?.score?.toFixed(0) || 0}/100</span>
+                  <span className="feature-level">{features.moisture?.level || 'Unknown'}</span>
                 </div>
               </div>
 
@@ -154,7 +155,7 @@ function ResultsSection({ result, onReset }) {
                 <div className="feature-icon color">🎨</div>
                 <div className="feature-content">
                   <span className="feature-label">Color</span>
-                  <span className="feature-value">{features.color.type}</span>
+                  <span className="feature-value">{features.color?.type || 'Unknown'}</span>
                 </div>
               </div>
 
@@ -162,7 +163,7 @@ function ResultsSection({ result, onReset }) {
                 <div className="feature-icon texture">🔲</div>
                 <div className="feature-content">
                   <span className="feature-label">Texture</span>
-                  <span className="feature-value">{features.texture.type}</span>
+                  <span className="feature-value">{features.texture?.type || 'Unknown'}</span>
                 </div>
               </div>
 
@@ -170,7 +171,7 @@ function ResultsSection({ result, onReset }) {
                 <div className="feature-icon brightness">☀️</div>
                 <div className="feature-content">
                   <span className="feature-label">Brightness</span>
-                  <span className="feature-value">{features.brightness.level}</span>
+                  <span className="feature-value">{features.brightness?.level || 'Unknown'}</span>
                 </div>
               </div>
             </div>
