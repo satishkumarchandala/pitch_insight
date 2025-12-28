@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # MongoDB Configuration
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://satishchandala834_db_user:0MivD44lzk3kCcqk@cluster0.izh4its.mongodb.net/")
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017/")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "pitch_insight")
 
 # Security Configuration
@@ -32,7 +32,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 # CORS Configuration
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://localhost:5173,http://localhost:5174"
+    "http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pitch-insight-backend.onrender.com/,https://pitch-insight-frontend.vercel.app/"
 ).split(",")
 
 # Subscription Plans
