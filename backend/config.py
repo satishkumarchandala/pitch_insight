@@ -32,7 +32,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 # CORS Configuration
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pitch-insight-backend.onrender.com/,https://pitch-insight-frontend.vercel.app/"
+    "http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pitch-insight-frontend.vercel.app"
 ).split(",")
 
 # Subscription Plans
