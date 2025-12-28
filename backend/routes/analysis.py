@@ -172,7 +172,10 @@ async def quick_analyze(
         
         # Get pipeline and analyze
         pipe = get_pipeline()
-        analysis_result = pipe.analyze_quick(temp_path)
+        analysis_result = pipe.analyze(temp_path, save_visualization=False)
+        
+        # Extract final classification results
+        final_classification = analysis_result.get("final_classification", {})
         
         # Generate analysis ID
         analysis_id = str(uuid.uuid4())
@@ -180,8 +183,8 @@ async def quick_analyze(
         response_data = {
             "success": True,
             "analysis_id": analysis_id,
-            "pitch_type": analysis_result.get("pitch_type"),
-            "confidence": analysis_result.get("confidence"),
+            "pitch_type": final_classification.get("prediction"),
+            "confidence": float(final_classification.get("confidence", 0.0)),
             "timestamp": datetime.utcnow().isoformat(),
             "processing_time": time.time() - start_time
         }
