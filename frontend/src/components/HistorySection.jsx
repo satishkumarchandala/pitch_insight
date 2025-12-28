@@ -19,7 +19,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('http://localhost:8000/api/auth/history', {
+      const response = await axios.get(`${API_URL}/api/auth/history`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }

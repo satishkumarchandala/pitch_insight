@@ -3,7 +3,7 @@ import axios from 'axios'
 import { X, CreditCard, Lock, CheckCircle } from 'lucide-react'
 import './PaymentModal.css'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function PaymentModal({ planType = 'monthly', user, token, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)

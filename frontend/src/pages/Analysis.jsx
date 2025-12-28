@@ -25,7 +25,7 @@ function Analysis({ token, onNavigate, user }) {
 
   const fetchSubscriptionStatus = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/auth/subscription-status', {
+      const response = await axios.get(`${API_URL}/api/auth/subscription-status`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

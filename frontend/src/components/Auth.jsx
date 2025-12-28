@@ -58,7 +58,7 @@ function Auth({ onLogin, onClose, initialMode = 'login' }) {
         localStorage.setItem('token', data.access_token)
         
         // Fetch user info
-        const userResponse = await fetch('http://localhost:8000/api/auth/me', {
+        const userResponse = await fetch(`${API_URL}/api/auth/me`, {
           headers: {
             'Authorization': `Bearer ${data.access_token}`
           }

@@ -3,7 +3,7 @@ import axios from 'axios'
 import { MessageCircle, X, Send, Zap, Loader } from 'lucide-react'
 import './ChatWidget.css'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function ChatWidget({ user, token, currentAnalysisId }) {
   const [isOpen, setIsOpen] = useState(false)

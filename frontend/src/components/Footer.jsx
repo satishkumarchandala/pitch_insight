@@ -12,7 +12,7 @@ function Footer() {
           </p>
           
           <div className="footer-links">
-            <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer">
+            <a href={`${API_URL}/docs`} target="_blank" rel="noopener noreferrer">
               API Docs
             </a>
             <span className="separator">•</span>
