@@ -1,0 +1,43 @@
+# ============================================
+# OPTIMIZED FOR RENDER FREE TIER (512MB RAM)
+# ============================================
+
+# Core Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Data Validation & HTTP
+pydantic==2.10.5
+requests==2.32.3
+
+# Image Processing (lightweight versions)
+opencv-python-headless==4.12.0.88  # Headless = smaller footprint
+pillow==11.0.0
+numpy==2.2.1
+
+# ONNX Runtime (CPU only - GPU version is much larger)
+onnxruntime==1.16.0
+
+# Authentication and Database
+pymongo==4.6.0
+bcrypt==4.1.0
+python-jose[cryptography]==3.3.0
+passlib==1.7.4
+
+# Payment Gateway
+razorpay==1.4.0
+
+# AI Chatbot
+google-genai==0.3.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# ============================================
+# REMOVED FOR MEMORY OPTIMIZATION:
+# - matplotlib (not needed for API)
+# - torch/torchvision (using ONNX instead)
+# - ultralytics (models already exported)
+# ============================================
+
