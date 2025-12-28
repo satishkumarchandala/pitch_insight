@@ -161,6 +161,28 @@ async def get_analysis_detail(
     return {"success": True, "analysis": analysis}
 
 
+@router.delete("/history/{analysis_id}")
+async def delete_analysis(
+    analysis_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete an analysis from history"""
+    analysis_collection = get_analysis_collection()
+    
+    result = analysis_collection.delete_one({
+        "analysis_id": analysis_id,
+        "user_id": str(current_user["_id"])
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found"
+        )
+    
+    return {"success": True, "message": "Analysis deleted successfully"}
+
+
 @router.get("/subscription-status")
 async def get_subscription_status(current_user: dict = Depends(get_current_user)):
     """Get current subscription status"""

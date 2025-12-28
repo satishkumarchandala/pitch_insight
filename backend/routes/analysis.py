@@ -14,7 +14,7 @@ from pathlib import Path
 from schemas import PitchAnalysisResponse
 from auth import get_optional_current_user
 from database import get_analysis_collection
-from utils import get_pipeline, compute_image_hash
+from utils import get_pipeline, compute_image_hash, convert_numpy_types
 
 router = APIRouter(prefix="/api", tags=["analysis"])
 
@@ -91,6 +91,9 @@ async def analyze_pitch(
         # Get pipeline and analyze
         pipe = get_pipeline()
         analysis_result = pipe.analyze(temp_path)
+        
+        # Convert numpy types to Python native types
+        analysis_result = convert_numpy_types(analysis_result)
         
         # TODO: Add weather integration if include_weather=True
         weather_data = None
@@ -174,6 +177,9 @@ async def quick_analyze(
         pipe = get_pipeline()
         analysis_result = pipe.analyze(temp_path, save_visualization=False)
         
+        # Convert numpy types to Python native types
+        analysis_result = convert_numpy_types(analysis_result)
+        
         # Extract final classification results
         final_classification = analysis_result.get("final_classification", {})
         
@@ -184,7 +190,9 @@ async def quick_analyze(
             "success": True,
             "analysis_id": analysis_id,
             "pitch_type": final_classification.get("prediction"),
+            "prediction": final_classification.get("prediction"),
             "confidence": float(final_classification.get("confidence", 0.0)),
+            "probabilities": final_classification.get("probabilities", {}),
             "timestamp": datetime.utcnow().isoformat(),
             "processing_time": time.time() - start_time
         }
