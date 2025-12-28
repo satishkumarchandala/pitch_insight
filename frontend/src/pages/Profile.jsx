@@ -3,7 +3,7 @@ import { User, Mail, Calendar, LogOut, History, TrendingUp } from 'lucide-react'
 import axios from 'axios'
 import './Profile.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function Profile({ user, token, onLogout, onNavigate }) {
   const [history, setHistory] = useState([])

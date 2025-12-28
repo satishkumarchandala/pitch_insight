@@ -2,7 +2,7 @@ import React from 'react'
 import { Heart, Github } from 'lucide-react'
 import './Footer.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function Footer() {
   return (

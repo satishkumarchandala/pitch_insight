@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import './Auth.css'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
+
 function Auth({ onLogin, onClose, initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode) // 'login' or 'signup'
   const [formData, setFormData] = useState({
@@ -27,8 +29,8 @@ function Auth({ onLogin, onClose, initialMode = 'login' }) {
 
     try {
       const endpoint = mode === 'login' 
-        ? 'http://localhost:8000/api/auth/login'
-        : 'http://localhost:8000/api/auth/signup'
+        ? `${API_URL}/api/auth/login`
+        : `${API_URL}/api/auth/signup`
 
       const payload = mode === 'login'
         ? { email: formData.email, password: formData.password }

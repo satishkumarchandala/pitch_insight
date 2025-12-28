@@ -3,7 +3,7 @@ import { Upload, MapPin, Cloud, Activity } from 'lucide-react'
 import axios from 'axios'
 import './UploadSection.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function UploadSection({ onAnalysisComplete, onError, loading, setLoading, token }) {
   const [selectedImage, setSelectedImage] = useState(null)

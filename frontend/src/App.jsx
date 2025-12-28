@@ -9,6 +9,8 @@ import Auth from './components/Auth'
 import ChatWidget from './components/ChatWidget'
 import './App.css'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
+
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
   const [user, setUser] = useState(null)

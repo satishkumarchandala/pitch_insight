@@ -7,7 +7,7 @@ import UpgradePrompt from '../components/UpgradePrompt'
 import axios from 'axios'
 import './Analysis.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function Analysis({ token, onNavigate, user }) {
   const [activeTab, setActiveTab] = useState('new') // 'new' or 'history'
