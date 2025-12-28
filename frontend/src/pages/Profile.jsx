@@ -162,7 +162,7 @@ function Profile({ user, token, onLogout, onNavigate }) {
           </div>
         ) : (
           <div className="history-list">
-            {history.slice(0, 5).map((item, index) => (
+            {(history || []).slice(0, 5).map((item, index) => (
               <div key={item._id || index} className="history-item">
                 <div className="history-main">
                   <div className="history-icon">🏏</div>

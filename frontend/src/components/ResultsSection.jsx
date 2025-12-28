@@ -272,7 +272,7 @@ function ResultsSection({ result, onReset }) {
             <div className="strategy-section">
               <h4>🏏 Batting Strategy</h4>
               <ul>
-                {match_strategy.batting_strategy.slice(0, 3).map((tip, i) => (
+                {(match_strategy.batting_strategy || []).slice(0, 3).map((tip, i) => (
                   <li key={i}>{tip}</li>
                 ))}
               </ul>
@@ -281,7 +281,7 @@ function ResultsSection({ result, onReset }) {
             <div className="strategy-section">
               <h4>🎳 Bowling Strategy</h4>
               <ul>
-                {match_strategy.bowling_strategy.slice(0, 3).map((tip, i) => (
+                {(match_strategy.bowling_strategy || []).slice(0, 3).map((tip, i) => (
                   <li key={i}>{tip}</li>
                 ))}
               </ul>
@@ -290,7 +290,7 @@ function ResultsSection({ result, onReset }) {
             <div className="strategy-section">
               <h4>👥 Team Composition</h4>
               <ul>
-                {match_strategy.team_composition.slice(0, 3).map((tip, i) => (
+                {(match_strategy.team_composition || []).slice(0, 3).map((tip, i) => (
                   <li key={i}>{tip}</li>
                 ))}
               </ul>

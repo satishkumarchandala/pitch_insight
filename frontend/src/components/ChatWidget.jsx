@@ -40,7 +40,7 @@ function ChatWidget({ user, token, currentAnalysisId }) {
         {
           message: messageText,
           analysis_id: currentAnalysisId,
-          conversation_history: messages.slice(-6) // Last 3 exchanges for context
+          conversation_history: (messages || []).slice(-6) // Last 3 exchanges for context
         },
         token ? {
           headers: { 'Authorization': `Bearer ${token}` }
