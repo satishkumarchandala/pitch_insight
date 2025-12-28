@@ -17,7 +17,7 @@ pillow==11.0.0
 numpy==2.2.1
 
 # ONNX Runtime (CPU only - GPU version is much larger)
-onnxruntime==1.16.0
+onnxruntime>=1.16.0
 
 # Authentication and Database
 pymongo==4.6.0
