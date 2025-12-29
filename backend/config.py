@@ -11,10 +11,11 @@ MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017/")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "pitch_insight")
 
 # Security Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production-123456789")
+SECRET_KEY = os.getenv("SECRET_KEY", "5qdQY-jIRJUNAJ896p3q1o2Vcks-MxRIAVs5bM_f_u0")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080))  # 7 days
 
 # Weather API Configuration
+# Get your free API key from: https://www.weatherapi.com/signup.aspx
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY", "b2ad62736cbd4e52aaa133601252712")
 
 # Razorpay Configuration
@@ -22,7 +23,8 @@ RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_RwZJe3KOgTNbo6")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "dV0pnEvxDeLKU6mndB7aFeYv")
 
 # Gemini AI Configuration
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyDOnBpIiOt-eNSqlsO3HhlQdyo1sdoTf8A")
+# Get your free API key from: https://aistudio.google.com/app/apikey
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # Server Configuration
 HOST = os.getenv("HOST", "0.0.0.0")
@@ -39,7 +41,7 @@ ALLOWED_ORIGINS = os.getenv(
 SUBSCRIPTION_PLANS = {
     "monthly": {
         "name": "Pro Monthly",
-        "price": 499,  # in INR
+        "price": 199,  # in INR
         "currency": "INR",
         "duration": 30,  # days
         "features": [
@@ -65,5 +67,5 @@ SUBSCRIPTION_PLANS = {
 }
 
 # Model paths
-YOLO_MODEL_PATH = "pitch_yolov8_best.onnx"
-CLASSIFIER_MODEL_PATH = "best_pitch_classifier.onnx"
+YOLO_MODEL_PATH = "pitch_yolov8_best.pt"
+CLASSIFIER_MODEL_PATH = "best_pitch_classifier.pth"

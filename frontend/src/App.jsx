@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { authAPI } from './services/api'
 import Header from './components/Header'
 import Home from './pages/Home'
 import Analysis from './pages/Analysis'
@@ -8,8 +9,6 @@ import Footer from './components/Footer'
 import Auth from './components/Auth'
 import ChatWidget from './components/ChatWidget'
 import './App.css'
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -47,17 +46,9 @@ function App() {
     if (!token) return
     
     try {
-      const response = await fetch(`${API_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-        localStorage.setItem('user', JSON.stringify(userData))
-      }
+      const userData = await authAPI.getMe()
+      setUser(userData)
+      localStorage.setItem('user', JSON.stringify(userData))
     } catch (error) {
       console.error('Error refreshing user data:', error)
     }
@@ -77,7 +68,7 @@ function App() {
       case 'home':
         return <Home user={user} onNavigate={handleNavigate} />
       case 'analysis':
-        return <Analysis token={token} user={user} onNavigate={handleNavigate} />
+        return <Analysis token={token} user={user} onNavigate={handleNavigate} onUserUpdate={refreshUserData} />
       case 'pricing':
         return <Pricing user={user} token={token} onNavigate={handleNavigate} onUserUpdate={refreshUserData} />
       case 'profile':

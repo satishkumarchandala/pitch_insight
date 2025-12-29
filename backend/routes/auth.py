@@ -161,34 +161,23 @@ async def get_analysis_detail(
     return {"success": True, "analysis": analysis}
 
 
-@router.delete("/history/{analysis_id}")
-async def delete_analysis(
-    analysis_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Delete an analysis from history"""
-    analysis_collection = get_analysis_collection()
-    
-    result = analysis_collection.delete_one({
-        "analysis_id": analysis_id,
-        "user_id": str(current_user["_id"])
-    })
-    
-    if result.deleted_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Analysis not found"
-        )
-    
-    return {"success": True, "message": "Analysis deleted successfully"}
-
-
 @router.get("/subscription-status")
 async def get_subscription_status(current_user: dict = Depends(get_current_user)):
     """Get current subscription status"""
+    subscription_type = current_user.get("subscription_type", "free")
+    subscription_status = current_user.get("subscription_status", "active")
+    
+    # Check if user can access complete analysis (Pro feature)
+    can_access = (
+        subscription_type == "pro" and 
+        subscription_status == "active"
+    )
+    
     return {
-        "subscription_type": current_user.get("subscription_type", "free"),
-        "subscription_status": current_user.get("subscription_status", "active"),
+        "success": True,
+        "subscription_type": subscription_type,
+        "subscription_status": subscription_status,
         "subscription_start_date": current_user.get("subscription_start_date"),
-        "subscription_end_date": current_user.get("subscription_end_date")
+        "subscription_end_date": current_user.get("subscription_end_date"),
+        "can_access_complete_analysis": can_access
     }

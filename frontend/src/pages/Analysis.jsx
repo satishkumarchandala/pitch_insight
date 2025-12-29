@@ -7,9 +7,7 @@ import UpgradePrompt from '../components/UpgradePrompt'
 import axios from 'axios'
 import './Analysis.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
-
-function Analysis({ token, onNavigate, user }) {
+function Analysis({ token, onNavigate, user, onUserUpdate }) {
   const [activeTab, setActiveTab] = useState('new') // 'new' or 'history'
   const [analysisType, setAnalysisType] = useState(null) // 'quick' or 'complete'
   const [result, setResult] = useState(null)
@@ -18,16 +16,16 @@ function Analysis({ token, onNavigate, user }) {
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState(null)
 
-  // Fetch subscription status when component mounts
+  // Fetch subscription status when component mounts or user changes
   useEffect(() => {
     if (token) {
       fetchSubscriptionStatus()
     }
-  }, [token])
+  }, [token, user])
 
   const fetchSubscriptionStatus = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/subscription-status`, {
+      const response = await axios.get('http://localhost:8000/api/auth/subscription-status', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -50,6 +48,14 @@ function Analysis({ token, onNavigate, user }) {
       }
     }
     setAnalysisType(type)
+  }
+
+  const handlePaymentSuccess = async () => {
+    setShowUpgradePrompt(false)
+    // Navigate to pricing to complete payment
+    if (onNavigate) {
+      onNavigate('pricing')
+    }
   }
 
   const handleAnalysisComplete = (data) => {
@@ -264,12 +270,7 @@ function Analysis({ token, onNavigate, user }) {
       {showUpgradePrompt && (
         <UpgradePrompt
           onClose={() => setShowUpgradePrompt(false)}
-          onUpgrade={() => {
-            setShowUpgradePrompt(false)
-            if (onNavigate) {
-              onNavigate('pricing')
-            }
-          }}
+          onUpgrade={handlePaymentSuccess}
         />
       )}
     </div>

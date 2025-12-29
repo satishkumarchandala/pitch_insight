@@ -461,14 +461,21 @@ class CompletePitchPipeline:
             'features': features,
             'ml_classification': {
                 'prediction': ml_class,
-                'confidence': ml_confidence,
-                'probabilities': ml_probs
+                'confidence': float(ml_confidence),
+                'probabilities': {
+                    self.classes[i]: float(ml_probs[i] * 100)
+                    for i in range(len(self.classes))
+                }
             },
             'final_classification': {
                 'prediction': final_class,
-                'confidence': final_conf,
-                'probabilities': final_probs,
-                'adjustment_info': adjustment_info
+                'confidence': float(final_conf),
+                'probabilities': {
+                    self.classes[i]: float(final_probs[i] * 100)
+                    for i in range(len(self.classes))
+                },
+                'adjustments': adjustment_info['adjustments'],
+                'reasons': adjustment_info['reasons']
             }
         }
         

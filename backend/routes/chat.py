@@ -55,10 +55,10 @@ async def chat_with_ai(
     current_user: Optional[dict] = Depends(get_optional_current_user)
 ):
     """Chat with Gemini AI about cricket and pitch analysis"""
-    if not GEMINI_API_KEY:
+    if not GEMINI_API_KEY or not client:
         raise HTTPException(
             status_code=503,
-            detail="Chatbot service is not configured. Please contact administrator."
+            detail="AI Chat service is not available. Please configure a valid GEMINI_API_KEY. Get one free at: https://aistudio.google.com/app/apikey"
         )
     
     try:

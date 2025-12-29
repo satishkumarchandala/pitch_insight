@@ -3,8 +3,6 @@ import axios from 'axios';
 import { Clock, Trash2, Eye, MapPin, Image as ImageIcon, CloudSun } from 'lucide-react';
 import './HistorySection.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
-
 const HistorySection = ({ onViewDetails, authToken }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +19,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/api/auth/history`, {
+      const response = await axios.get('http://localhost:8000/api/auth/history', {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -41,7 +39,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
     }
 
     try {
-      await axios.delete(`${API_URL}/api/auth/history/${analysisId}`, {
+      await axios.delete(`http://localhost:8000/api/auth/history/${analysisId}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -56,7 +54,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
 
   const handleViewDetails = async (analysisId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/history/${analysisId}`, {
+      const response = await axios.get(`http://localhost:8000/api/auth/history/${analysisId}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }

@@ -4,16 +4,39 @@ FastAPI server for cricket pitch analysis with weather integration
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import uvicorn
 
 from config import ALLOWED_ORIGINS, HOST, PORT, DEBUG
 from database import close_database_connection
 
-# Initialize FastAPI app
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for startup and shutdown"""
+    # Startup
+    print("=" * 60)
+    print("🏏 Pitch Insight API - Starting Up")
+    print("=" * 60)
+    print(f"📍 Server: http://{HOST}:{PORT}")
+    print(f"📚 Docs: http://{HOST}:{PORT}/docs")
+    print(f"🔧 Debug Mode: {DEBUG}")
+    print("=" * 60)
+    
+    yield
+    
+    # Shutdown
+    print("\n🔄 Shutting down gracefully...")
+    close_database_connection()
+    print("✅ Pitch Insight API stopped")
+
+
+# Initialize FastAPI app with lifespan
 app = FastAPI(
     title="Pitch Insight API",
     description="AI-powered cricket pitch analysis with weather integration",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -41,28 +64,6 @@ app.include_router(chat_router)
 app.include_router(subscription_router)
 app.include_router(analysis_router)
 app.include_router(weather_router)
-
-
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup"""
-    print("=" * 60)
-    print("🏏 Pitch Insight API - Starting Up")
-    print("=" * 60)
-    print(f"📍 Server: http://{HOST}:{PORT}")
-    print(f"📚 Docs: http://{HOST}:{PORT}/docs")
-    print(f"🔧 Debug Mode: {DEBUG}")
-    print("=" * 60)
-
-
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    print("\n🔄 Shutting down gracefully...")
-    close_database_connection()
-    print("✅ Pitch Insight API stopped")
 
 
 # Main entry point

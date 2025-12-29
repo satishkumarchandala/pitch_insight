@@ -9,15 +9,13 @@ from jose import JWTError, jwt
 import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import os
 
 from models import TokenData, UserResponse, user_helper
 from database import get_users_collection
+from config import SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Security Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production-123456789")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
 # Bearer token security
 security = HTTPBearer()

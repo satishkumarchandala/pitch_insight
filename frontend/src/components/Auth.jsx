@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
+import { authAPI } from '../services/api'
 import './Auth.css'
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function Auth({ onLogin, onClose, initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode) // 'login' or 'signup'
@@ -28,56 +27,53 @@ function Auth({ onLogin, onClose, initialMode = 'login' }) {
     setLoading(true)
 
     try {
-      const endpoint = mode === 'login' 
-        ? `${API_URL}/api/auth/login`
-        : `${API_URL}/api/auth/signup`
-
-      const payload = mode === 'login'
-        ? { email: formData.email, password: formData.password }
-        : {
-            email: formData.email,
-            password: formData.password,
-            username: formData.username,
-            full_name: formData.full_name || null
-          }
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Authentication failed')
-      }
-
       if (mode === 'login') {
-        // Store token and user info
+        // Login
+        const data = await authAPI.login(formData.email, formData.password)
+        
+        // Store token
         localStorage.setItem('token', data.access_token)
         
         // Fetch user info
-        const userResponse = await fetch(`${API_URL}/api/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${data.access_token}`
-          }
-        })
-        
-        if (userResponse.ok) {
-          const userData = await userResponse.json()
-          localStorage.setItem('user', JSON.stringify(userData))
-          onLogin(userData, data.access_token)
-        }
+        const userData = await authAPI.getMe()
+        localStorage.setItem('user', JSON.stringify(userData))
+        onLogin(userData, data.access_token)
       } else {
-        // After signup, automatically log in
+        // Signup
+        await authAPI.signup(
+          formData.email, 
+          formData.password, 
+          formData.username,
+          formData.full_name
+        )
+        
+        // After signup, switch to login
         setMode('login')
         setError('Account created successfully! Please log in.')
       }
     } catch (err) {
-      setError(err.message || 'An error occurred')
+      console.error('Auth error:', err)
+      
+      // Handle validation errors (422) with detail array
+      if (err.response?.data?.detail) {
+        const detail = err.response.data.detail
+        
+        // If detail is an array of validation errors
+        if (Array.isArray(detail)) {
+          const errorMessages = detail.map(e => e.msg || JSON.stringify(e)).join(', ')
+          setError(errorMessages)
+        } 
+        // If detail is a string
+        else if (typeof detail === 'string') {
+          setError(detail)
+        }
+        // If detail is an object
+        else {
+          setError('Validation error: Please check your input')
+        }
+      } else {
+        setError(err.message || 'An error occurred')
+      }
     } finally {
       setLoading(false)
     }

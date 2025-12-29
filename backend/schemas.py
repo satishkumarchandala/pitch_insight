@@ -67,7 +67,8 @@ class PitchAnalysisResponse(BaseModel):
     features: Dict
     ml_classification: Dict
     final_classification: Dict
-    weather: Optional[WeatherData]
+    match_info: Optional[Dict] = None
+    weather: Optional[WeatherData] = None
     match_strategy: Dict
     timestamp: str
     processing_time: float
