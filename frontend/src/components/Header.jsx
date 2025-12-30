@@ -9,7 +9,7 @@ function Header({ user, onLoginClick, onLogout, currentPage, onNavigate }) {
       <div className="container">
         <div className="header-content">
           <div className="logo" onClick={() => onNavigate('home')}>
-            <Activity className="logo-icon" />
+            <img src="/logo.png" alt="Pitch Insight" className="logo-icon" />
             <div>
               <h1 className="logo-text">Pitch Insight</h1>
               <p className="logo-subtitle">AI-Powered Cricket Pitch Analyzer</p>

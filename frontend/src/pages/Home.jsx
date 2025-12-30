@@ -8,7 +8,7 @@ function Home({ user, onNavigate }) {
       <div className="hero-section">
         <div className="hero-content">
           <div className="hero-icon">
-            <Activity size={64} />
+            <img src="/logo.png" alt="Pitch Insight" style={{ width: '120px', height: '120px', borderRadius: '50%' }} />
           </div>
           <h1>Welcome to Pitch Insight</h1>
           <p className="hero-subtitle">
