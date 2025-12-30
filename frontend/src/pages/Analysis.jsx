@@ -258,7 +258,7 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
                     <li>✓ Match strategy recommendations</li>
                     <li>✓ Processing time: ~5-7 seconds</li>
                   </ul>
-                  <button className="option-btn complete">
+                  <button className="option-btn quick">
                     {user && subscriptionStatus?.subscription_type !== 'pro' 
                       ? '👑 Upgrade to Pro' 
                       : 'Start Complete Analysis'}

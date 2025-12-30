@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Analysis from './pages/Analysis'
 import Profile from './pages/Profile'
 import Pricing from './pages/Pricing'
+import Settings from './pages/Settings'
 import Footer from './components/Footer'
 import Auth from './components/Auth'
 import ChatWidget from './components/ChatWidget'
@@ -16,17 +17,28 @@ function App() {
   const [token, setToken] = useState(null)
   const [showAuth, setShowAuth] = useState(false)
   const [currentAnalysisId, setCurrentAnalysisId] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [theme, setTheme] = useState('light')
 
-  // Check for stored authentication on mount
+  // Check for stored authentication and theme on mount
   useEffect(() => {
     const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
+    const storedTheme = localStorage.getItem('theme') || 'light'
     
     if (storedToken && storedUser) {
       setToken(storedToken)
       setUser(JSON.parse(storedUser))
     }
+    setTheme(storedTheme)
+    document.documentElement.setAttribute('data-theme', storedTheme)
   }, [])
+
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+  }
 
   const handleLogin = (userData, authToken) => {
     setUser(userData)
@@ -71,6 +83,8 @@ function App() {
         return <Analysis token={token} user={user} onNavigate={handleNavigate} onUserUpdate={refreshUserData} />
       case 'pricing':
         return <Pricing user={user} token={token} onNavigate={handleNavigate} onUserUpdate={refreshUserData} />
+      case 'settings':
+        return <Settings theme={theme} onThemeChange={handleThemeChange} />
       case 'profile':
         return user ? (
           <Profile 
@@ -102,21 +116,23 @@ function App() {
         onLogout={handleLogout}
         currentPage={currentPage}
         onNavigate={handleNavigate}
+        onSidebarToggle={setSidebarOpen}
       />
       
-      <main className="main-content">
+      <main className="main-content" style={{ marginLeft: sidebarOpen ? '280px' : '80px' }}>
         <div className="container">
           {renderPage()}
         </div>
       </main>
 
-      <Footer />
+      <Footer sidebarOpen={sidebarOpen} />
 
       {/* Chat Widget - Available on all pages */}
       <ChatWidget 
         user={user}
         token={token}
         currentAnalysisId={currentAnalysisId}
+        sidebarOpen={sidebarOpen}
       />
 
       {showAuth && (

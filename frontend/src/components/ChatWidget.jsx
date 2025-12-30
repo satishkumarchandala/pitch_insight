@@ -5,7 +5,7 @@ import './ChatWidget.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
-function ChatWidget({ user, token, currentAnalysisId }) {
+function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
@@ -80,7 +80,7 @@ function ChatWidget({ user, token, currentAnalysisId }) {
   }
 
   return (
-    <>
+    <div style={{ position: 'fixed', right: '20px', bottom: '20px', transition: 'all 0.3s ease' }}>
       {/* Floating Button */}
       {!isOpen && (
         <button
@@ -88,7 +88,7 @@ function ChatWidget({ user, token, currentAnalysisId }) {
           onClick={() => setIsOpen(true)}
           title="Chat with AI"
         >
-          <MessageCircle size={24} />
+          <img src="/chatbot_logo.png" alt="AI Chat" className="chat-logo-img" />
           <span className="chat-badge">AI</span>
         </button>
       )}
@@ -205,7 +205,7 @@ function ChatWidget({ user, token, currentAnalysisId }) {
           )}
         </div>
       )}
-    </>
+    </div>
   )
 }
 

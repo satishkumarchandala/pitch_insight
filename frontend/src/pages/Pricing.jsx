@@ -132,7 +132,7 @@ function Pricing({ user, token, onNavigate, onUserUpdate }) {
           </ul>
 
           <button 
-            className="plan-button pro-button"
+            className="plan-button free-button"
             onClick={() => handleUpgradeClick('monthly')}
             disabled={user?.subscription_type === 'pro'}
           >

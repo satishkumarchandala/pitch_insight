@@ -7,6 +7,7 @@
 .main-content {
   flex: 1;
   padding: 2rem 0 4rem;
+  transition: margin-left 0.3s ease;
 }
 
 /* Error Container */
@@ -46,49 +47,87 @@
 
 /* Button Styles */
 .btn {
-  padding: 0.875rem 2rem;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
-  border: none;
-  border-radius: 12px;
+  border: 2px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   text-decoration: none;
   font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-primary {
   background: var(--primary);
   color: white;
+  border-color: var(--primary);
 }
 
 .btn-primary:hover {
   background: var(--primary-dark);
+  border-color: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-secondary {
   background: var(--surface);
-  color: var(--text);
-  border: 2px solid var(--border);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 .btn-secondary:hover {
-  background: var(--surface-hover);
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--surface);
   border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-danger {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 1.5rem 0 3rem;
+  }
+}
+
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem 0 2rem;
@@ -105,5 +144,21 @@
 
   .error-card h2 {
     font-size: 1.5rem;
+  }
+
+  .btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.75rem 0 1.5rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
   }
 }

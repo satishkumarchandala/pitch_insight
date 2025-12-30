@@ -8,7 +8,7 @@ function Home({ user, onNavigate }) {
       <div className="hero-section">
         <div className="hero-content">
           <div className="hero-icon">
-            <img src="/logo.png" alt="Pitch Insight" style={{ width: '120px', height: '120px', borderRadius: '50%' }} />
+            <img src="/logo.png" alt="Pitch Insight" style={{ width: '250px', height: '250px', borderRadius: '50%' }} />
           </div>
           <h1>Welcome to Pitch Insight</h1>
           <p className="hero-subtitle">
@@ -33,13 +33,13 @@ function Home({ user, onNavigate }) {
             </button>
           </div>
 
-          <div className="action-card primary" onClick={() => onNavigate('analysis')}>
+          <div className="action-card" onClick={() => onNavigate('analysis')}>
             <div className="card-icon">
               <TrendingUp size={40} />
             </div>
             <h3>New Analysis</h3>
             <p>Upload a pitch image and get instant AI-powered analysis</p>
-            <button className="card-btn primary">
+            <button className="card-btn ">
               Start Analysis
             </button>
           </div>

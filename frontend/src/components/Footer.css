@@ -1,8 +1,9 @@
 .footer {
   background: var(--surface);
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--border);
   padding: 2rem 0;
   margin-top: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .footer-content {

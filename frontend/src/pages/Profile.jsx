@@ -176,7 +176,7 @@ function Profile({ user, token, onLogout, onNavigate }) {
                   className="history-confidence"
                   style={{ color: getConfidenceColor(item.confidence) }}
                 >
-                  {(item.confidence * 100).toFixed(0)}% confident
+                  {item.confidence.toFixed(1)}% confident
                 </div>
               </div>
             ))}
