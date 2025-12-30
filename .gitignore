@@ -27,6 +27,8 @@ wheels/
 # Environment variables
 .env
 .env.local
+.env.development
+.env.production
 .env.production.local
 *.env
 

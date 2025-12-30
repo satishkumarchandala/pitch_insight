@@ -11,16 +11,16 @@ MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017/")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "pitch_insight")
 
 # Security Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "5qdQY-jIRJUNAJ896p3q1o2Vcks-MxRIAVs5bM_f_u0")
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080))  # 7 days
 
 # Weather API Configuration
 # Get your free API key from: https://www.weatherapi.com/signup.aspx
-WEATHER_API_KEY = os.getenv("WEATHER_API_KEY", "b2ad62736cbd4e52aaa133601252712")
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY", "")
 
 # Razorpay Configuration
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_RwZJe3KOgTNbo6")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "dV0pnEvxDeLKU6mndB7aFeYv")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 
 # Gemini AI Configuration
 # Get your free API key from: https://aistudio.google.com/app/apikey
