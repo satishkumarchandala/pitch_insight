@@ -7,6 +7,8 @@ import UpgradePrompt from '../components/UpgradePrompt'
 import axios from 'axios'
 import './Analysis.css'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 function Analysis({ token, onNavigate, user, onUserUpdate }) {
   const [activeTab, setActiveTab] = useState('new') // 'new' or 'history'
   const [analysisType, setAnalysisType] = useState(null) // 'quick' or 'complete'
@@ -21,11 +23,11 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
     if (token) {
       fetchSubscriptionStatus()
     }
-  }, [token, user])
+  }, [token, user?.subscription_type, user?.subscription_status])
 
   const fetchSubscriptionStatus = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/auth/subscription-status', {
+      const response = await axios.get(`${API_URL}/api/auth/subscription-status`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -52,10 +54,12 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
 
   const handlePaymentSuccess = async () => {
     setShowUpgradePrompt(false)
-    // Navigate to pricing to complete payment
-    if (onNavigate) {
-      onNavigate('pricing')
+    // Refresh user data to get updated subscription
+    if (onUserUpdate) {
+      await onUserUpdate()
     }
+    // Refetch subscription status to update UI
+    await fetchSubscriptionStatus()
   }
 
   const handleAnalysisComplete = (data) => {

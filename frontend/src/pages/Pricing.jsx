@@ -24,10 +24,13 @@ function Pricing({ user, token, onNavigate, onUserUpdate }) {
     if (onUserUpdate) {
       await onUserUpdate()
     }
-    // Redirect to analysis page
-    if (onNavigate) {
-      onNavigate('analysis')
-    }
+    // Give a small delay to ensure state updates propagate
+    setTimeout(() => {
+      // Redirect to analysis page
+      if (onNavigate) {
+        onNavigate('analysis')
+      }
+    }, 500)
   }
 
   const features = {
