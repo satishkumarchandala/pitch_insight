@@ -283,43 +283,49 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar.open {
-    width: 240px;
+  .sidebar {
     position: fixed;
-    z-index: 1002;
+    z-index: 1100;
+  }
+
+  .sidebar.open {
+    width: 260px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
   }
 
   .sidebar.closed {
     width: 0;
     border: none;
+    overflow: hidden;
   }
 
   .sidebar-toggle {
-    width: 36px;
-    height: 36px;
-    left: 10px;
-    top: 10px;
+    width: 40px;
+    height: 40px;
+    left: 15px;
+    top: 15px;
+    z-index: 1101;
   }
 
   .sidebar.open ~ .sidebar-toggle {
-    left: 250px;
+    left: 270px;
   }
 
   .sidebar.closed ~ .sidebar-toggle {
-    left: 10px;
+    left: 15px;
   }
 
   .logo-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
 
   .logo-text {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
   }
 
   .logo-subtitle {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .nav-link {

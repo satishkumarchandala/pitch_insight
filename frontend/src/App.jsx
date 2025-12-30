@@ -119,7 +119,12 @@ function App() {
         onSidebarToggle={setSidebarOpen}
       />
       
-      <main className="main-content" style={{ marginLeft: sidebarOpen ? '280px' : '80px' }}>
+      <main 
+        className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}
+        style={{ 
+          marginLeft: window.innerWidth > 768 ? (sidebarOpen ? '280px' : '80px') : '0'
+        }}
+      >
         <div className="container">
           {renderPage()}
         </div>
