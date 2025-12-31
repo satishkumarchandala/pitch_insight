@@ -16,16 +16,18 @@ function Header({ user, onLoginClick, onLogout, currentPage, onNavigate, onSideb
 
   return (
     <>
+      {/* Fixed Header */}
+      <header className={`fixed-header ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className="header-content">
+          <h1 className="header-title">Pitch Insight</h1>
+          <p className="header-subtitle">Advanced Cricket Pitch Analysis</p>
+        </div>
+      </header>
+
       <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-content">
           <div className="logo" onClick={() => onNavigate('home')}>
             <img src="/logo.png" alt="Pitch Insight" className="logo-icon" />
-            {isOpen && (
-              <div className="logo-text-container">
-                <h1 className="logo-text">Pitch Insight</h1>
-                <p className="logo-subtitle">AI-Powered Cricket Pitch Analyzer</p>
-              </div>
-            )}
           </div>
 
           <nav className="nav">

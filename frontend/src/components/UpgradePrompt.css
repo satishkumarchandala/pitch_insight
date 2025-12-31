@@ -72,13 +72,13 @@
   width: 100px;
   height: 100px;
   margin: 0 auto 1.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #E9D48F 0%, #C6A756 100%);
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+  color: #2D4035;
+  box-shadow: 0 8px 24px rgba(198, 167, 86, 0.4);
 }
 
 .upgrade-content h2 {

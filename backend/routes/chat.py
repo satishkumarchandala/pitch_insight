@@ -54,7 +54,21 @@ async def chat_with_ai(
     chat_request: ChatRequest,
     current_user: Optional[dict] = Depends(get_optional_current_user)
 ):
-    """Chat with Gemini AI about cricket and pitch analysis"""
+    """Chat with Gemini AI about cricket and pitch analysis (Pro Only)"""
+    # Check if user is authenticated
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required to use chatbot. Please sign in."
+        )
+    
+    # Check if user has pro subscription
+    if current_user.get("subscription_type", "free") != "pro":
+        raise HTTPException(
+            status_code=403,
+            detail="Chatbot is a Pro feature. Upgrade to Pro to access AI-powered cricket insights."
+        )
+    
     if not GEMINI_API_KEY or not client:
         raise HTTPException(
             status_code=503,

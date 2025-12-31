@@ -17,9 +17,9 @@
 }
 
 .subscription-badge.pro {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #E9D48F 0%, #C6A756 100%);
+  color: #2D4035;
+  box-shadow: 0 2px 8px rgba(198, 167, 86, 0.4);
 }
 
 .subscription-badge.pro.expired {

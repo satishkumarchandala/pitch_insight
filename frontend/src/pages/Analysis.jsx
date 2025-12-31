@@ -139,28 +139,6 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
   // Render main analysis page with tabs
   return (
     <div className="analysis-page">
-      {/* Tab Navigation */}
-      <div className="analysis-tabs">
-        <button 
-          className={`tab-btn ${activeTab === 'new' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('new')
-            setAnalysisType(null)
-            setError(null)
-          }}
-        >
-          <PlusCircle size={20} />
-          New Analysis
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <History size={20} />
-          History
-        </button>
-      </div>
-
       {/* Tab Content */}
       {activeTab === 'history' ? (
         <HistorySection 
@@ -225,12 +203,7 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
                     <div className="feature-badge">🎯 Pitch Classification</div>
                     <div className="feature-badge">📊 Basic Insights</div>
                   </div>
-                  <p>Get instant pitch type classification with confidence scores. Perfect for quick assessments.</p>
-                  <ul className="option-list">
-                    <li>✓ Pitch type prediction</li>
-                    <li>✓ Confidence scores</li>
-                    <li>✓ Processing time: ~2-3 seconds</li>
-                  </ul>
+        
                   <button className="option-btn quick">
                     Start Quick Analysis
                   </button>
@@ -250,14 +223,7 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
                       <div className="feature-badge pro-required">👑 Pro Required</div>
                     )}
                   </div>
-                  <p>Comprehensive analysis with detailed features, weather integration, and strategic insights.</p>
-                  <ul className="option-list">
-                    <li>✓ Pitch detection & features</li>
-                    <li>✓ Grass, cracks, moisture analysis</li>
-                    <li>✓ Real-time weather integration</li>
-                    <li>✓ Match strategy recommendations</li>
-                    <li>✓ Processing time: ~5-7 seconds</li>
-                  </ul>
+                 
                   <button className="option-btn quick">
                     {user && subscriptionStatus?.subscription_type !== 'pro' 
                       ? '👑 Upgrade to Pro' 

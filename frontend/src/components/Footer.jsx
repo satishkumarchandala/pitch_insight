@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.o
 
 function Footer({ sidebarOpen = true }) {
   return (
-    <footer className="footer" style={{ marginLeft: sidebarOpen ? '280px' : '80px', transition: 'margin-left 0.3s ease' }}>
+    <footer className={`footer ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <div className="container">
         <div className="footer-content">
           <p className="footer-text">
@@ -14,14 +14,7 @@ function Footer({ sidebarOpen = true }) {
           </p>
           
           <div className="footer-links">
-            <a href={`${API_URL}/docs`} target="_blank" rel="noopener noreferrer">
-              API Docs
-            </a>
-            <span className="separator">•</span>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-              <Github size={16} />
-              GitHub
-            </a>
+            <span>Developed by Satish Chandala</span>
           </div>
 
           <p className="footer-copyright">

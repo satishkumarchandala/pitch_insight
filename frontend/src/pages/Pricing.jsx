@@ -78,7 +78,7 @@ function Pricing({ user, token, onNavigate, onUserUpdate }) {
               <span className="amount">0</span>
               <span className="period">/month</span>
             </div>
-            <p className="plan-description">Perfect for quick assessments</p>
+            
           </div>
 
           <ul className="features-list">
@@ -103,7 +103,7 @@ function Pricing({ user, token, onNavigate, onUserUpdate }) {
         </div>
 
         {/* Pro Plan */}
-        <div className="pricing-card pro-card featured">
+        <div className="pricing-card free-card">
           <div className="popular-badge">
             <Crown size={16} />
             Most Popular
@@ -119,7 +119,7 @@ function Pricing({ user, token, onNavigate, onUserUpdate }) {
               <span className="amount">199</span>
               <span className="period">/month</span>
             </div>
-            <p className="plan-description">Complete analysis with all features</p>
+           
           </div>
 
           <ul className="features-list">

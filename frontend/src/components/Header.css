@@ -1,3 +1,46 @@
+/* Fixed Header Styles */
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  height: 80px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  transition: left 0.3s ease;
+}
+
+.fixed-header.sidebar-closed {
+  left: 100px;
+}
+
+.header-content {
+  padding: 0 2rem;
+  flex: 1;
+}
+
+.header-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
 /* Sidebar Styles */
 .sidebar {
   position: fixed;
@@ -19,7 +62,7 @@
 }
 
 .sidebar.closed {
-  width: 80px;
+  width: 100px;
 }
 
 .sidebar-content {
@@ -33,9 +76,10 @@
 .logo {
   display: flex;
   align-items: center;
+  justify-content: left;
   gap: 1rem;
   cursor: pointer;
-  padding: 0.2rem;
+  padding: 0.5rem;
   border-radius: 8px;
   transition: background 0.3s ease;
   white-space: nowrap;
@@ -46,8 +90,8 @@
 }
 
 .logo-icon {
-  width: 75px;
-  height: 75px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
   border-radius: 50%;
   flex-shrink: 0;
@@ -181,8 +225,8 @@
 /* Sidebar Toggle Button */
 .sidebar-toggle {
   position: fixed;
-  left: 280px;
-  top: 20px;
+  left: 260px;
+  top: 50%;
   z-index: 1001;
   background: var(--surface);
   border: 2px solid var(--border);
@@ -213,7 +257,7 @@
   position: fixed;
   top: 15px;
   right: 15px;
-  z-index: 1001;
+  z-index: 1002;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -273,6 +317,14 @@
 }
 
 @media (max-width: 1024px) {
+  .fixed-header {
+    left: 260px;
+  }
+
+  .fixed-header.sidebar-closed {
+    left: 0;
+  }
+
   .sidebar.open {
     width: 260px;
   }
@@ -283,6 +335,28 @@
 }
 
 @media (max-width: 768px) {
+  .fixed-header {
+    left: 0;
+    height: 70px;
+    padding-right: 120px;
+  }
+
+  .fixed-header.sidebar-closed {
+    left: 0;
+  }
+
+  .header-content {
+    padding: 0 1rem;
+  }
+
+  .header-title {
+    font-size: 1.4rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.8rem;
+  }
+
   .sidebar {
     position: fixed;
     z-index: 1100;
@@ -347,6 +421,19 @@
 }
 
 @media (max-width: 480px) {
+  .fixed-header {
+    height: 60px;
+    padding-right: 100px;
+  }
+
+  .header-title {
+    font-size: 1.1rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.7rem;
+  }
+
   .sidebar.open {
     width: 200px;
   }

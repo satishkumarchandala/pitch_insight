@@ -1,16 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
-import { MessageCircle, X, Send, Zap, Loader } from 'lucide-react'
+import { MessageCircle, X, Send, Zap, Loader, Maximize2, Minimize2 } from 'lucide-react'
 import './ChatWidget.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
 
 function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isMaximized, setIsMaximized] = useState(false)
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
+  
+  // Check if user is pro
+  const isPro = user && user.subscription_type === 'pro'
 
   const quickQuestions = [
     "Explain this pitch analysis",
@@ -61,9 +65,10 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
 
     } catch (error) {
       console.error('Chat error:', error)
+      const errorMessage = error.response?.data?.detail || 'Sorry, I encountered an error. Please try again.'
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: errorMessage,
         error: true,
         timestamp: new Date().toISOString()
       }])
@@ -95,16 +100,25 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="chat-widget">
+        <div className={`chat-widget ${isMaximized ? 'maximized' : ''} ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
           {/* Header */}
           <div className="chat-header">
             <div className="chat-title">
               <Zap size={20} className="chat-icon-pulse" />
               <span>Pitch Insight AI</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="close-btn" title="Close">
-              <X size={20} />
-            </button>
+            <div className="header-buttons">
+              <button 
+                onClick={() => setIsMaximized(!isMaximized)} 
+                className="header-btn" 
+                title={isMaximized ? "Restore" : "Maximize"}
+              >
+                {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+              </button>
+              <button onClick={() => setIsOpen(false)} className="header-btn" title="Close">
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -112,20 +126,41 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
             {messages.length === 0 && (
               <div className="chat-welcome">
                 <div className="welcome-icon">🏏</div>
-                <h3>Hi! I'm your cricket AI assistant</h3>
-                <p>Ask me anything about pitch analysis or cricket!</p>
-                <div className="quick-questions">
-                  {quickQuestions.map((q, i) => (
+                {!user ? (
+                  <>
+                    <h3>Sign In to Access AI Chat</h3>
+                    <p>Sign in to use our AI-powered cricket assistant (Pro feature)</p>
+                  </>
+                ) : !isPro ? (
+                  <>
+                    <h3>⭐ Pro Feature</h3>
+                    <p>Upgrade to Pro to unlock AI-powered cricket insights and analysis</p>
                     <button
-                      key={i}
-                      onClick={() => sendMessage(q)}
+                      onClick={() => window.location.href = '/pricing'}
                       className="quick-q-btn"
-                      disabled={loading}
+                      style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}
                     >
-                      {q}
+                      Upgrade to Pro
                     </button>
-                  ))}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <h3>Hi! I'm your cricket AI assistant</h3>
+                    <p>Ask me anything about pitch analysis or cricket!</p>
+                    <div className="quick-questions">
+                      {quickQuestions.map((q, i) => (
+                        <button
+                          key={i}
+                          onClick={() => sendMessage(q)}
+                          className="quick-q-btn"
+                          disabled={loading}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -169,16 +204,16 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask about cricket or analysis..."
-              disabled={loading}
+              placeholder={!user ? "Sign in to use chatbot..." : !isPro ? "Pro feature - Upgrade to unlock..." : "Ask about cricket or analysis..."}
+              disabled={loading || !user || !isPro}
               rows="1"
               className="chat-input"
             />
             <button
               onClick={() => sendMessage()}
-              disabled={loading || !inputMessage.trim()}
+              disabled={loading || !inputMessage.trim() || !user || !isPro}
               className="send-btn"
-              title="Send message"
+              title={!user ? "Sign in required" : !isPro ? "Pro feature" : "Send message"}
             >
               <Send size={20} />
             </button>
@@ -194,14 +229,8 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
               className="clear-chat-btn"
               title="Clear all messages"
             >
-              🗑️ Clear Chat
+              Clear Chat
             </button>
-          )}
-
-          {!user && (
-            <div className="chat-footer-note">
-              💡 <strong>Sign in</strong> for context-aware analysis chat
-            </div>
           )}
         </div>
       )}
