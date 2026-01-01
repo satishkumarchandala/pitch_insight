@@ -95,11 +95,31 @@ export const authAPI = {
 
 export const analysisAPI = {
   // Complete analysis (Pro feature)
-  analyzeComplete: async (imageFile, weatherData = null) => {
+  analyzeComplete: async (imageFile, options = {}) => {
     const formData = new FormData()
     formData.append('file', imageFile)
-    if (weatherData) {
-      formData.append('weather_data', JSON.stringify(weatherData))
+    
+    // Add optional parameters
+    if (options.weatherData) {
+      formData.append('weather_data', JSON.stringify(options.weatherData))
+    }
+    if (options.useForecast !== undefined) {
+      formData.append('use_forecast', options.useForecast)
+    }
+    if (options.matchType) {
+      formData.append('match_type', options.matchType)
+    }
+    if (options.matchStartTime) {
+      formData.append('match_start_time', options.matchStartTime)
+    }
+    if (options.city) {
+      formData.append('city', options.city)
+    }
+    if (options.latitude) {
+      formData.append('latitude', options.latitude)
+    }
+    if (options.longitude) {
+      formData.append('longitude', options.longitude)
     }
 
     const response = await apiClient.post('/api/analyze', formData, {
@@ -129,9 +149,33 @@ export const analysisAPI = {
 // ==========================================
 
 export const weatherAPI = {
-  // Get weather for a location
+  // Get current weather for a location
   getWeather: async (location) => {
     const response = await apiClient.get(`/api/weather/${encodeURIComponent(location)}`)
+    return response.data
+  },
+
+  // Get comprehensive weather forecast
+  getForecast: async (options = {}) => {
+    const params = new URLSearchParams()
+    
+    if (options.city) {
+      params.append('city', options.city)
+    }
+    if (options.latitude) {
+      params.append('latitude', options.latitude)
+    }
+    if (options.longitude) {
+      params.append('longitude', options.longitude)
+    }
+    if (options.matchFormat) {
+      params.append('match_format', options.matchFormat)
+    }
+    if (options.matchStartTime) {
+      params.append('match_start_time', options.matchStartTime)
+    }
+
+    const response = await apiClient.get(`/api/weather/forecast?${params.toString()}`)
     return response.data
   },
 }

@@ -1,0 +1,707 @@
+.weather-forecast-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.forecast-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.forecast-header h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.forecast-location {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+/* Current Weather Card */
+.current-weather-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.current-weather-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.current-weather-card h3 {
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.current-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.current-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.current-item svg {
+  color: var(--secondary);
+  opacity: 0.7;
+}
+
+.current-item div {
+  display: flex;
+  flex-direction: column;
+}
+
+.current-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.current-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.current-conditions {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Historical Card */
+.historical-card {
+  background: var(--surface);
+  border: 3px solid var(--primary);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(16, 185, 129, 0.05);
+  transition: all 0.2s ease;
+}
+
+.historical-card:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.1);
+  transform: translateY(-2px);
+}
+
+.historical-card h3 {
+  margin-bottom: 20px;
+}
+
+.historical-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.historical-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.hist-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.hist-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.historical-inference {
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.historical-inference strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.historical-inference p {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Test Match Forecast */
+.test-match-forecast {
+  margin-bottom: 20px;
+}
+
+.test-match-forecast > h3 {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.day-forecast-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.day-forecast-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 0 0 2px var(--primary);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.day-header {
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.day-header:hover {
+  background: var(--bg-hover);
+}
+
+.day-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.day-info h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.day-date {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.day-advantage {
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.day-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+
+.day-details {
+  padding: 20px;
+}
+
+.pitch-condition {
+  background: var(--bg-secondary);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.pitch-condition p {
+  margin: 8px 0;
+  color: var(--text-primary);
+}
+
+/* Sessions */
+.sessions-container h5 {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.session-card {
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.session-card:hover {
+  border-color: var(--secondary);
+  box-shadow: 0 3px 8px rgba(59, 130, 246, 0.1);
+  transform: translateX(4px);
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.session-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.session-time {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.session-weather {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.session-impact {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.impact-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+}
+
+.impact-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.impact-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Advantage Bars */
+.advantage-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.advantage-bar {
+  display: grid;
+  grid-template-columns: 80px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.advantage-bar > span:first-child {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bar {
+  height: 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 12px;
+}
+
+.bar-fill.bowling {
+  background: var(--secondary);
+  opacity: 0.7;
+}
+
+.bar-fill.batting {
+  background: var(--primary);
+  opacity: 0.7;
+}
+
+.advantage-bar > span:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.session-factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.factor-tag {
+  padding: 6px 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--warning);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.session-strategy {
+  padding: 12px;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+}
+
+/* Innings Forecast */
+.innings-forecast {
+  margin-bottom: 20px;
+}
+
+.innings-forecast > h3 {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.innings-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.innings-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 0 0 2px var(--primary);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.innings-header {
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.innings-header:hover {
+  background: var(--bg-hover);
+}
+
+.innings-header h4 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.innings-time {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.innings-details {
+  padding: 20px;
+}
+
+.innings-weather {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.weather-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.weather-item svg {
+  color: var(--secondary);
+  opacity: 0.7;
+}
+
+.innings-impact {
+  margin-bottom: 20px;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.impact-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.impact-box label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.impact-badge.large {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.impact-value.large {
+  font-size: 16px;
+}
+
+.innings-advantage {
+  margin-bottom: 20px;
+}
+
+.innings-factors {
+  margin-bottom: 16px;
+}
+
+.innings-factors strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.innings-strategy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+}
+
+.innings-strategy svg {
+  flex-shrink: 0;
+}
+
+/* Match Summary */
+.match-summary-card {
+  background: var(--surface);
+  border: 3px solid var(--secondary);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.05);
+  transition: all 0.2s ease;
+}
+
+.match-summary-card:hover {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 0 0 1px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.match-summary-card h3 {
+  margin-bottom: 16px;
+}
+
+.summary-text {
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.pitch-trend {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.pitch-trend svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.key-risks {
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.key-risks h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.key-risks ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.key-risks li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.recommendations {
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.recommendations h4 {
+  margin-bottom: 12px;
+}
+
+.recommendations ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.recommendations li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.phase-advantages {
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.phase-advantages h4 {
+  margin-bottom: 12px;
+}
+
+.phase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.phase-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.phase-name {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.phase-badge {
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .weather-forecast-container {
+    padding: 12px;
+  }
+
+  .current-grid,
+  .historical-grid,
+  .impact-grid,
+  .phase-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .day-header,
+  .innings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .day-summary {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .advantage-bar {
+    grid-template-columns: 60px 1fr 40px;
+  }
+}

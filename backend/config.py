@@ -67,5 +67,5 @@ SUBSCRIPTION_PLANS = {
 }
 
 # Model paths
-YOLO_MODEL_PATH = "pitch_yolov8_best.pt"
-CLASSIFIER_MODEL_PATH = "best_pitch_classifier.pth"
+YOLO_MODEL_PATH = "pitch_yolov8_best.onnx"
+CLASSIFIER_MODEL_PATH = "best_pitch_classifier.onnx"

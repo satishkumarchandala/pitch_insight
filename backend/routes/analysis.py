@@ -204,11 +204,29 @@ async def analyze_pitch(
     longitude: Optional[float] = Form(None),
     city: Optional[str] = Form(None),
     include_weather: bool = Form(True),
+    use_forecast: bool = Form(False),
     match_type: str = Form("odi"),
     custom_overs: Optional[int] = Form(None),
+    match_start_time: Optional[str] = Form(None),
     current_user: Optional[dict] = Depends(get_optional_current_user)
 ):
-    """Complete pitch analysis with weather integration (Pro feature)"""
+    """
+    Complete pitch analysis with weather integration (Pro feature)
+    
+    Args:
+        image: Pitch image file
+        latitude: Location latitude (optional)
+        longitude: Location longitude (optional)
+        city: City name (optional)
+        include_weather: Include weather data (default: True)
+        use_forecast: Use comprehensive forecast instead of current weather (default: False)
+        match_type: Match format - test, odi, t20, or custom
+        custom_overs: Number of overs for custom format
+        match_start_time: Match start time in HH:MM format (for forecast)
+        
+    Returns:
+        Complete pitch analysis with optional comprehensive weather forecast
+    """
     # Check Pro subscription for authenticated users
     if current_user:
         check_pro_subscription(current_user)
@@ -249,49 +267,89 @@ async def analyze_pitch(
         
         # Fetch weather data if requested (optional feature)
         weather_data = None
+        weather_forecast = None
+        
         if include_weather and (city or (latitude is not None and longitude is not None)):
             try:
-                import requests
                 from config import WEATHER_API_KEY
                 
                 # Only attempt if API key is configured and not default
                 if WEATHER_API_KEY and WEATHER_API_KEY != "your-weather-api-key-here":
                     location = city if city else f"{latitude},{longitude}"
-                    weather_url = "https://api.weatherapi.com/v1/current.json"
-                    weather_response = requests.get(
-                        weather_url,
-                        params={"key": WEATHER_API_KEY, "q": location, "aqi": "no"},
-                        timeout=5
-                    )
                     
-                    if weather_response.status_code == 200:
-                        weather_json = weather_response.json()
-                        current = weather_json.get("current", {})
-                        location_data = weather_json.get("location", {})
+                    # Use comprehensive forecast if requested
+                    if use_forecast:
+                        from weather_forecast_analyzer import get_weather_analyzer
                         
-                        # Match the WeatherData schema exactly
-                        weather_data = {
-                            "temperature": current.get("temp_c", 0),
-                            "feels_like": current.get("feelslike_c", 0),
-                            "humidity": current.get("humidity", 0),
-                            "dew_point": current.get("dewpoint_c", 0),
-                            "uv_index": current.get("uv", 0),
-                            "wind_speed": current.get("wind_kph", 0),
-                            "wind_direction": current.get("wind_dir", "N"),
-                            "wind_degree": current.get("wind_degree", 0),
-                            "cloud_cover": current.get("cloud", 0),
-                            "pressure": current.get("pressure_mb", 0),
-                            "visibility": current.get("vis_km", 0),
-                            "rainfall": current.get("precip_mm", 0),
-                            "conditions": current.get("condition", {}).get("text", "Unknown"),
-                            "location": f"{location_data.get('name')}, {location_data.get('country')}"
-                        }
-                        print(f"✅ Weather data fetched for {location}")
-                    elif weather_response.status_code == 401:
-                        print(f"⚠️ Weather API key is invalid or expired (401 Unauthorized)")
-                        print(f"   To enable weather features, get a free API key from https://www.weatherapi.com/")
-                    else:
-                        print(f"⚠️ Weather API returned status {weather_response.status_code}")
+                        analyzer = get_weather_analyzer()
+                        forecast_result = analyzer.get_comprehensive_forecast(
+                            location=location,
+                            match_format=match_type,
+                            match_start_time=match_start_time
+                        )
+                        
+                        if "error" not in forecast_result:
+                            weather_forecast = forecast_result
+                            # Also set basic weather_data from current conditions
+                            current = forecast_result.get("current", {})
+                            weather_data = {
+                                "temperature": current.get("temperature", 0),
+                                "feels_like": current.get("feels_like", 0),
+                                "humidity": current.get("humidity", 0),
+                                "dew_point": current.get("dew_point", 0),
+                                "uv_index": current.get("uv_index", 0),
+                                "wind_speed": current.get("wind_speed", 0),
+                                "wind_direction": current.get("wind_direction", "N"),
+                                "wind_degree": current.get("wind_degree", 0),
+                                "cloud_cover": current.get("cloud_cover", 0),
+                                "pressure": current.get("pressure", 0),
+                                "visibility": current.get("visibility", 0),
+                                "rainfall": current.get("rainfall", 0),
+                                "conditions": current.get("conditions", "Unknown"),
+                                "location": forecast_result.get("location", "Unknown")
+                            }
+                            print(f"✅ Comprehensive weather forecast generated for {location}")
+                        else:
+                            print(f"⚠️ Forecast failed: {forecast_result['error']}")
+                    
+                    # Fall back to current weather if no forecast or forecast failed
+                    if not weather_forecast:
+                        import requests
+                        weather_url = "https://api.weatherapi.com/v1/current.json"
+                        weather_response = requests.get(
+                            weather_url,
+                            params={"key": WEATHER_API_KEY, "q": location, "aqi": "no"},
+                            timeout=5
+                        )
+                        
+                        if weather_response.status_code == 200:
+                            weather_json = weather_response.json()
+                            current = weather_json.get("current", {})
+                            location_data = weather_json.get("location", {})
+                            
+                            # Match the WeatherData schema exactly
+                            weather_data = {
+                                "temperature": current.get("temp_c", 0),
+                                "feels_like": current.get("feelslike_c", 0),
+                                "humidity": current.get("humidity", 0),
+                                "dew_point": current.get("dewpoint_c", 0),
+                                "uv_index": current.get("uv", 0),
+                                "wind_speed": current.get("wind_kph", 0),
+                                "wind_direction": current.get("wind_dir", "N"),
+                                "wind_degree": current.get("wind_degree", 0),
+                                "cloud_cover": current.get("cloud", 0),
+                                "pressure": current.get("pressure_mb", 0),
+                                "visibility": current.get("vis_km", 0),
+                                "rainfall": current.get("precip_mm", 0),
+                                "conditions": current.get("condition", {}).get("text", "Unknown"),
+                                "location": f"{location_data.get('name')}, {location_data.get('country')}"
+                            }
+                            print(f"✅ Weather data fetched for {location}")
+                        elif weather_response.status_code == 401:
+                            print(f"⚠️ Weather API key is invalid or expired (401 Unauthorized)")
+                            print(f"   To enable weather features, get a free API key from https://www.weatherapi.com/")
+                        else:
+                            print(f"⚠️ Weather API returned status {weather_response.status_code}")
                 else:
                     print("ℹ️ Weather API key not configured - analysis will continue without weather data")
                     print("   To enable weather features, get a free API key from https://www.weatherapi.com/")
@@ -333,6 +391,7 @@ async def analyze_pitch(
             "final_classification": results.get("final_classification", {}),
             "match_info": match_info,
             "weather": weather_data,
+            "weather_forecast": weather_forecast,
             "match_strategy": match_strategy,
             "timestamp": datetime.utcnow().isoformat(),
             "processing_time": time.time() - start_time

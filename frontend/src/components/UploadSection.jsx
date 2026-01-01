@@ -9,8 +9,10 @@ function UploadSection({ onAnalysisComplete, onError, loading, setLoading, token
   const [selectedImage, setSelectedImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [includeWeather, setIncludeWeather] = useState(false)
+  const [useForecast, setUseForecast] = useState(false)
   const [matchType, setMatchType] = useState('odi')
   const [customOvers, setCustomOvers] = useState('')
+  const [matchStartTime, setMatchStartTime] = useState('')
   const [location, setLocation] = useState({
     latitude: '',
     longitude: '',
@@ -131,10 +133,15 @@ function UploadSection({ onAnalysisComplete, onError, loading, setLoading, token
       const formData = new FormData()
       formData.append('image', selectedImage)
       formData.append('include_weather', includeWeather)
+      formData.append('use_forecast', useForecast)
       formData.append('match_type', matchType)
 
       if (matchType === 'custom' && customOvers) {
         formData.append('custom_overs', customOvers)
+      }
+      
+      if (matchStartTime) {
+        formData.append('match_start_time', matchStartTime)
       }
 
       if (includeWeather) {
@@ -320,6 +327,43 @@ function UploadSection({ onAnalysisComplete, onError, loading, setLoading, token
             </label>
             <p className="option-hint">Get weather-adjusted match strategies</p>
           </div>
+
+          {includeWeather && (
+            <>
+              <div className="option-group fade-in">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={useForecast}
+                    onChange={(e) => setUseForecast(e.target.checked)}
+                  />
+                  <Activity size={18} />
+                  <span>Comprehensive Weather Forecast</span>
+                </label>
+                <p className="option-hint">
+                  {matchType === 'test' 
+                    ? '5-day forecast with session-wise analysis' 
+                    : 'Innings-wise forecast with dew analysis'}
+                </p>
+              </div>
+
+              {useForecast && (matchType === 't20' || matchType === 'odi') && (
+                <div className="option-group fade-in">
+                  <label className="option-label">
+                    <span className="label-text">⏰ Match Start Time (Optional)</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={matchStartTime}
+                    onChange={(e) => setMatchStartTime(e.target.value)}
+                    className="input"
+                    placeholder="HH:MM (e.g., 19:00)"
+                  />
+                  <p className="option-hint">For better dew and lighting analysis</p>
+                </div>
+              )}
+            </>
+          )}
 
           {includeWeather && (
             <div className="location-inputs fade-in">

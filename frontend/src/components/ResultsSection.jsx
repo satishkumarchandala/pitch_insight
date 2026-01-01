@@ -1,12 +1,14 @@
 import React from 'react'
 import { ArrowLeft, Clock, Target, Activity, Droplets, Thermometer, Wind, CloudRain } from 'lucide-react'
+import WeatherForecastDisplay from './WeatherForecastDisplay'
 import './ResultsSection.css'
 
 function ResultsSection({ result, onReset }) {
   const { 
     final_classification, 
     features, 
-    weather, 
+    weather,
+    weather_forecast,
     match_strategy,
     match_info,
     processing_time,
@@ -252,6 +254,16 @@ function ResultsSection({ result, onReset }) {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Comprehensive Weather Forecast */}
+        {weather_forecast && (
+          <div className="card slide-in-left" style={{ '--delay': '0.35s' }}>
+            <WeatherForecastDisplay 
+              forecast={weather_forecast} 
+              matchFormat={match_info?.format || 'odi'} 
+            />
           </div>
         )}
 

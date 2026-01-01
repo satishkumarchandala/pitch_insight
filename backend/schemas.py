@@ -11,7 +11,8 @@ class HealthResponse(BaseModel):
     timestamp: str
 
 
-class WeatherData(BaseModel):
+class CurrentWeather(BaseModel):
+    """Current weather conditions"""
     temperature: float
     feels_like: float
     humidity: float
@@ -25,29 +26,126 @@ class WeatherData(BaseModel):
     visibility: float
     rainfall: float
     conditions: str
-    location: str
+    is_day: int
+
+
+class HourlyForecast(BaseModel):
+    """Hourly weather forecast"""
+    time: str
+    temperature: float
+    humidity: float
+    cloud_cover: int
+    chance_of_rain: int
+    rainfall: float
+    wind_speed: float
+    wind_direction: str
+    conditions: str
+    will_it_rain: bool
+
+
+class SessionWeather(BaseModel):
+    """Weather conditions for a cricket session"""
+    session_name: str  # "1st Session", "2nd Session", "3rd Session", "1st Innings", "2nd Innings"
+    time_range: str
+    avg_temperature: float
+    avg_humidity: float
+    avg_cloud_cover: float
+    total_rainfall: float
+    chance_of_rain: int
+    avg_wind_speed: float
+    conditions_summary: str
+    
+    # Cricket-specific impact
+    swing_potential: str  # Low, Medium, High
+    swing_score: float  # 0-100
+    seam_movement: str
+    spin_assistance: str
+    spin_score: float
+    pitch_moisture_level: str
+    bowling_advantage: int  # 0-100
+    batting_advantage: int  # 0-100
+    dew_likelihood: str
+    recommended_strategy: str
+    key_factors: List[str]
+
+
+class DayForecast(BaseModel):
+    """Daily forecast with session breakdown"""
+    date: str
+    day_number: int  # Day 1, Day 2, etc.
+    max_temp: float
+    min_temp: float
+    avg_humidity: float
+    total_rainfall: float
+    chance_of_rain: int
+    sunrise: str
+    sunset: str
+    uv_index: float
+    conditions_summary: str
+    
+    # Session-wise breakdown (for Test matches)
+    sessions: List[SessionWeather]
+    
+    # Daily cricket impact
+    pitch_deterioration_rate: str
+    crack_development: str
+    outfield_condition: str
+    overall_advantage: str  # "Bowlers", "Batters", "Balanced"
+
+
+class HistoricalWeather(BaseModel):
+    """Historical weather trends"""
+    rainfall_24h: float
+    rainfall_48h: float
+    rainfall_72h: float
+    avg_temp_3d: float
+    avg_temp_7d: float
+    recent_conditions: str
+    pitch_moisture_inference: str
+    surface_hardness_inference: str
+    crack_potential: str
+    interpretation: str
 
 
 class WeatherImpact(BaseModel):
-    swing_potential: str  # Low, Medium, High
-    swing_score: float  # 0-100
+    """Overall weather impact on cricket match"""
+    swing_potential: str
+    swing_score: float
+    seam_movement: str
     spin_assistance: str
     spin_score: float
-    pitch_drying_rate: str  # Slow, Moderate, Fast
+    pitch_drying_rate: str
     dew_likelihood: str
     dew_gap: float
     overall_severity: str
     key_factors: List[str]
 
 
-class SessionForecast(BaseModel):
-    conditions: str
-    bowling_advantage: int  # 0-100
-    batting_advantage: int
-    recommended_strategy: str
+class MatchWeatherForecast(BaseModel):
+    """Complete match weather forecast"""
+    match_format: str  # "test", "odi", "t20"
+    location: str
+    
+    # Current conditions
+    current: CurrentWeather
+    
+    # Historical context
+    historical: HistoricalWeather
+    
+    # Format-specific forecasts
+    daily_forecasts: Optional[List[DayForecast]] = None  # For Test matches (5 days)
+    innings_forecasts: Optional[List[SessionWeather]] = None  # For limited-overs (2 innings)
+    hourly_forecast: List[HourlyForecast]
+    
+    # Overall match impact summary
+    pitch_behavior_trend: str
+    key_risks: List[str]
+    phase_wise_advantage: Dict[str, str]
+    match_condition_summary: str
+    recommendations: List[str]
 
 
-class HistoricalWeather(BaseModel):
+class HistoricalWeatherOld(BaseModel):
     rainfall_24h: float
     rainfall_72h: float
     avg_temp_7d: float
@@ -68,7 +166,8 @@ class PitchAnalysisResponse(BaseModel):
     ml_classification: Dict
     final_classification: Dict
     match_info: Optional[Dict] = None
-    weather: Optional[WeatherData] = None
+    weather: Optional[Dict] = None  # Can be CurrentWeather or MatchWeatherForecast
+    weather_forecast: Optional[MatchWeatherForecast] = None
     match_strategy: Dict
     timestamp: str
     processing_time: float
