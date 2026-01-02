@@ -57,18 +57,18 @@
 
 .popular-badge {
   position: absolute;
-  top: -15px;
+  top: 1.5rem;
   right: 20px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: var(--gradient-field);
   color: white;
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: 50px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.4);
 }
 
 .plan-header {
@@ -91,11 +91,11 @@
 }
 
 .free-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #6FA97E 0%, #4B7A56 100%);
 }
 
 .pro-icon {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #E9D48F 0%, #C6A756 100%);
 }
 
 .plan-header h2 {

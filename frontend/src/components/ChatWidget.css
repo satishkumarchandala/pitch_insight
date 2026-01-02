@@ -17,28 +17,29 @@
 
 /* Floating Button */
 .chat-float-button {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  width: 70px !important;
+  height: 70px !important;
   border-radius: 50%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #4B7A56 0%, #2D4035 100%) !important;
   color: white;
-  border: none;
+  border: 4px solid #a3e635 !important;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 24px rgba(75, 122, 86, 0.8), 0 0 40px rgba(163, 230, 53, 0.6) !important;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  z-index: 999;
+  z-index: 999999 !important;
   animation: shake 5s ease-in-out infinite;
+  pointer-events: auto !important;
 }
 
 .chat-float-button:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 6px 20px rgba(75, 122, 86, 0.7);
 }
 
 .chat-logo-img {
@@ -46,8 +47,8 @@
   height: 100px;
   object-fit: contain;
   border-radius: 30%;
-  border: 3px solid #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  border: 3px solid var(--secondary);
+  box-shadow: 0 0 8px rgba(75, 122, 86, 0.5);
 }
 
 .chat-badge {
@@ -64,37 +65,40 @@
 
 /* Chat Widget Container */
 .chat-widget {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 400px;
-  height: 600px;
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  width: 400px !important;
+  height: 600px !important;
   max-height: calc(100vh - 110px);
-  background: var(--surface);
+  background: var(--surface) !important;
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border: 4px solid #a3e635 !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 60px rgba(163, 230, 53, 0.5) !important;
   display: flex;
   flex-direction: column;
-  z-index: 999;
+  z-index: 999999 !important;
   animation: slideUp 0.3s ease;
   transition: all 0.3s ease;
+  pointer-events: auto !important;
 }
 
 .chat-widget.maximized {
-  top: 80px;
-  left: 280px;
-  right: 0;
-  bottom: 0;
-  width: calc(100vw - 280px);
-  height: calc(100vh - 80px);
-  max-height: none;
+  top: 80px !important;
+  left: 280px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: calc(100vw - 280px) !important;
+  height: calc(100vh - 80px) !important;
+  max-height: calc(100vh - 80px) !important;
   border-radius: 0;
   margin: 0;
+  border: none !important;
 }
 
 .chat-widget.maximized.sidebar-closed {
-  left: 100px;
-  width: calc(100vw - 100px);
+  left: 100px !important;
+  width: calc(100vw - 100px) !important;
 }
 
 @keyframes slideUp {
@@ -110,7 +114,7 @@
 
 /* Header */
 .chat-header {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #C6A756 0%, #8F6C2F 100%);
   color: white;
   padding: 16px 20px;
   border-radius: 16px 16px 0 0;
@@ -378,7 +382,7 @@
 }
 
 .chat-message.user .message-content {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #C6A756 0%, #8F6C2F 100%);
   color: white;
 }
 
