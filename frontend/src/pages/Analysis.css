@@ -6,6 +6,43 @@
   overflow: visible;
 }
 
+/* Tab Navigation */
+.analysis-tabs {
+  display: flex;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto 2rem;
+  padding: 0 2rem;
+  border-bottom: 2px solid rgba(198, 167, 86, 0.2);
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+  color: var(--primary);
+  background: rgba(198, 167, 86, 0.05);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: rgba(198, 167, 86, 0.1);
+}
+
 /* Analysis Hero - Premium */
 .analysis-hero {
   text-align: center;

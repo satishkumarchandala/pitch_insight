@@ -163,7 +163,7 @@ function UploadSection({ onAnalysisComplete, onError, loading, setLoading, token
         headers
       })
 
-      onAnalysisComplete(response.data)
+      onAnalysisComplete(response.data, selectedImage) // Pass the image
     } catch (error) {
       console.error('Analysis error:', error)
       onError(error.response?.data?.detail || 'Failed to analyze pitch. Please ensure the backend server is running.')
@@ -221,7 +221,7 @@ function UploadSection({ onAnalysisComplete, onError, loading, setLoading, token
         processing_time: response.data.processing_time
       }
 
-      onAnalysisComplete(fullResult)
+      onAnalysisComplete(fullResult, selectedImage) // Pass the image
     } catch (error) {
       console.error('Quick analysis error:', error)
       onError(error.response?.data?.detail || 'Failed to analyze pitch')

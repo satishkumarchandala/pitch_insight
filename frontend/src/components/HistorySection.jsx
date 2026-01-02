@@ -61,9 +61,19 @@ const HistorySection = ({ onViewDetails, authToken }) => {
           'Authorization': `Bearer ${authToken}`
         }
       });
-      setSelectedAnalysis(response.data);
-      if (onViewDetails) {
-        onViewDetails(response.data);
+      
+      // If full_result is available (saved analysis), pass it to the parent
+      if (response.data.full_result) {
+        setSelectedAnalysis(response.data.full_result);
+        if (onViewDetails) {
+          onViewDetails(response.data.full_result);
+        }
+      } else {
+        // Legacy analysis without full result
+        setSelectedAnalysis(response.data.analysis);
+        if (onViewDetails) {
+          onViewDetails(response.data.analysis);
+        }
       }
     } catch (err) {
       console.error('Error fetching analysis details:', err);
@@ -148,6 +158,26 @@ const HistorySection = ({ onViewDetails, authToken }) => {
       <div className="history-grid">
         {history.map((item) => (
           <div key={item.analysis_id} className="history-card">
+            {/* Image Preview */}
+            {item.image_data && (
+              <div className="history-card-image">
+                <img 
+                  src={item.image_data} 
+                  alt={item.image_name}
+                  loading="lazy"
+                />
+                <div className="image-overlay">
+                  <button
+                    onClick={() => handleViewDetails(item.analysis_id)}
+                    className="view-full-btn"
+                  >
+                    <Eye size={20} />
+                    View Full Analysis
+                  </button>
+                </div>
+              </div>
+            )}
+            
             <div className="history-card-header">
               <div className="history-card-title">
                 <ImageIcon size={16} />
@@ -180,7 +210,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
                   {item.pitch_type?.replace(/_/g, ' ').toUpperCase()}
                 </div>
                 <span className="confidence-text">
-                  {item.confidence.toFixed(1)}% confident
+                  {item.confidence?.toFixed(1)}% confident
                 </span>
               </div>
 
@@ -194,7 +224,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
               {item.location && (
                 <div className="history-info-row">
                   <MapPin size={14} />
-                  <span className="info-value">{item.location.city}</span>
+                  <span className="info-value">{item.location}</span>
                   {item.weather_included && (
                     <CloudSun size={14} className="weather-icon" />
                   )}
@@ -204,11 +234,11 @@ const HistorySection = ({ onViewDetails, authToken }) => {
               <div className="history-card-footer">
                 <div className="history-timestamp">
                   <Clock size={14} />
-                  <span>{formatDate(item.created_at)}</span>
+                  <span>{formatDate(item.saved_at || item.created_at)}</span>
                 </div>
                 {item.processing_time && (
                   <span className="processing-time">
-                    {item.processing_time}s
+                    {item.processing_time.toFixed(2)}s
                   </span>
                 )}
               </div>

@@ -1,9 +1,15 @@
-import React from 'react'
-import { ArrowLeft, Clock, Target, Activity, Droplets, Thermometer, Wind, CloudRain } from 'lucide-react'
+import React, { useState } from 'react'
+import { ArrowLeft, Clock, Target, Activity, Droplets, Thermometer, Wind, CloudRain, Save, Check } from 'lucide-react'
 import WeatherForecastDisplay from './WeatherForecastDisplay'
+import axios from 'axios'
 import './ResultsSection.css'
 
-function ResultsSection({ result, onReset }) {
+const API_URL = import.meta.env.VITE_API_URL || 'https://pitch-insight-backend.onrender.com' || 'http://localhost:8000'
+
+function ResultsSection({ result, onReset, authToken, uploadedImage }) {
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  
   const { 
     final_classification, 
     features, 
@@ -12,8 +18,75 @@ function ResultsSection({ result, onReset }) {
     match_strategy,
     match_info,
     processing_time,
-    ml_classification
+    ml_classification,
+    image_data // This will be present when viewing from history
   } = result
+
+  const handleSaveAnalysis = async () => {
+    if (!authToken) {
+      alert('Please login to save analysis')
+      return
+    }
+
+    setSaving(true)
+    try {
+      // Convert uploaded image to base64 if available
+      let imageData = null
+      
+      // If result already has image_data (from history), use it
+      if (image_data) {
+        imageData = image_data
+      } else if (uploadedImage) {
+        // If uploadedImage is already base64, use it
+        if (typeof uploadedImage === 'string' && uploadedImage.startsWith('data:image')) {
+          imageData = uploadedImage
+        } else if (uploadedImage instanceof File) {
+          // Convert File to base64
+          imageData = await new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result)
+            reader.readAsDataURL(uploadedImage)
+          })
+        }
+      }
+
+      // Prepare analysis data for saving
+      const analysisData = {
+        final_classification,
+        features,
+        weather,
+        weather_forecast,
+        match_strategy,
+        match_info,
+        processing_time,
+        ml_classification,
+        image_name: uploadedImage?.name || 'pitch_analysis.jpg',
+        image_data: imageData,
+        timestamp: new Date().toISOString()
+      }
+
+      const response = await axios.post(
+        `${API_URL}/api/save-analysis`,
+        analysisData,
+        {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      if (response.data.success) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000) // Reset after 3 seconds
+      }
+    } catch (error) {
+      console.error('Error saving analysis:', error)
+      alert(error.response?.data?.detail || 'Failed to save analysis. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const getPitchTypeColor = (type) => {
     const colors = {
@@ -43,11 +116,47 @@ function ResultsSection({ result, onReset }) {
           Analyze Another
         </button>
         
-        <div className="processing-info">
-          <Clock size={16} />
-          <span>{processing_time?.toFixed(2)}s</span>
+        <div className="header-right">
+          <div className="processing-info">
+            <Clock size={16} />
+            <span>{processing_time?.toFixed(2)}s</span>
+          </div>
+          
+          {authToken && (
+            <button 
+              className={`btn btn-save ${saved ? 'saved' : ''}`}
+              onClick={handleSaveAnalysis}
+              disabled={saving || saved}
+            >
+              {saved ? (
+                <>
+                  <Check size={18} />
+                  Saved
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  {saving ? 'Saving...' : 'Save Analysis'}
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Display uploaded image if available */}
+      {(uploadedImage || image_data) && (
+        <div className="uploaded-image-section slide-in-left" style={{ '--delay': '0.05s' }}>
+          <h3>📸 Analyzed Pitch Image</h3>
+          <div className="uploaded-image-container">
+            <img 
+              src={image_data || (typeof uploadedImage === 'string' ? uploadedImage : URL.createObjectURL(uploadedImage))}
+              alt="Analyzed pitch" 
+              className="uploaded-image"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Main Prediction Card */}
       <div className="prediction-card slide-in-left" style={{ '--delay': '0.1s' }}>

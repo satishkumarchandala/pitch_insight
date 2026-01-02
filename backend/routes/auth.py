@@ -107,15 +107,19 @@ async def get_me(current_user: UserResponse = Depends(get_current_active_user)):
 
 @router.get("/history")
 async def get_user_history(current_user: dict = Depends(get_current_user)):
-    """Get analysis history for current user"""
+    """Get analysis history for current user - only saved analyses with full results"""
     analysis_collection = get_analysis_collection()
     
-    # Get user's analysis history
+    # Get user's saved analyses (only those with full_result field)
     history = list(analysis_collection.find(
-        {"user_id": str(current_user["_id"])},
+        {
+            "user_id": str(current_user["_id"]),
+            "full_result": {"$exists": True}  # Only get saved analyses
+        },
         {
             "analysis_id": 1,
             "image_name": 1,
+            "image_data": 1,  # Include base64 image data
             "pitch_type": 1,
             "confidence": 1,
             "match_info": 1,
@@ -123,9 +127,10 @@ async def get_user_history(current_user: dict = Depends(get_current_user)):
             "location": 1,
             "processing_time": 1,
             "created_at": 1,
+            "saved_at": 1,
             "timestamp": 1
         }
-    ).sort("created_at", -1).limit(100))
+    ).sort("saved_at", -1).limit(100))
     
     # Convert ObjectId to string
     for item in history:
@@ -143,7 +148,7 @@ async def get_analysis_detail(
     analysis_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get detailed analysis by ID"""
+    """Get detailed analysis by ID with full result and image"""
     analysis_collection = get_analysis_collection()
     
     analysis = analysis_collection.find_one({
@@ -158,7 +163,50 @@ async def get_analysis_detail(
         )
     
     analysis["_id"] = str(analysis["_id"])
+    
+    # Return full analysis data if available (for saved analyses with images)
+    if "full_result" in analysis:
+        # Include the image data in the full result
+        full_result = analysis["full_result"]
+        if "image_data" in analysis and analysis["image_data"]:
+            full_result["image_data"] = analysis["image_data"]
+        
+        return {
+            "success": True,
+            "analysis": analysis,
+            "full_result": full_result
+        }
+    
     return {"success": True, "analysis": analysis}
+
+
+@router.delete("/history/{analysis_id}")
+async def delete_analysis(
+    analysis_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a saved analysis"""
+    analysis_collection = get_analysis_collection()
+    
+    # Find and delete the analysis
+    result = analysis_collection.delete_one({
+        "analysis_id": analysis_id,
+        "user_id": str(current_user["_id"])
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found or already deleted"
+        )
+    
+    print(f"✓ Analysis deleted: {analysis_id} for user {current_user.get('email')}")
+    
+    return {
+        "success": True,
+        "message": "Analysis deleted successfully",
+        "analysis_id": analysis_id
+    }
 
 
 @router.get("/subscription-status")

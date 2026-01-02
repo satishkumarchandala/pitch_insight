@@ -96,6 +96,23 @@ class AnalysisHistory(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class SavedAnalysis(BaseModel):
+    """Saved complete analysis with image"""
+    analysis_id: str
+    user_id: str
+    image_name: str
+    image_data: Optional[str] = None  # Base64 encoded image
+    pitch_type: str
+    confidence: float
+    full_result: dict  # Complete analysis result
+    weather_included: bool = False
+    location: Optional[str] = None
+    match_info: Optional[dict] = None
+    processing_time: Optional[float] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    saved_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # ============================================
 # Subscription Models
 # ============================================

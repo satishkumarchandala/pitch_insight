@@ -13,6 +13,7 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
   const [activeTab, setActiveTab] = useState('new') // 'new' or 'history'
   const [analysisType, setAnalysisType] = useState(null) // 'quick' or 'complete'
   const [result, setResult] = useState(null)
+  const [uploadedImage, setUploadedImage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
@@ -62,8 +63,9 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
     await fetchSubscriptionStatus()
   }
 
-  const handleAnalysisComplete = (data) => {
+  const handleAnalysisComplete = (data, image) => {
     setResult(data)
+    setUploadedImage(image) // Store the uploaded image
     setError(null)
   }
 
@@ -74,22 +76,66 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
 
   const handleReset = () => {
     setResult(null)
+    setUploadedImage(null)
     setError(null)
     setAnalysisType(null)
-    setActiveTab('new')
+    // If we were viewing from history, go back to history tab
+    if (activeTab === 'history-detail') {
+      setActiveTab('history')
+    } else {
+      setActiveTab('new')
+    }
   }
 
   const handleViewHistoryDetails = (analysisData) => {
+    console.log('Viewing history details:', analysisData) // Debug log
     // When viewing history details, show the result
+    // If analysisData has image_data, convert it to uploadedImage format
+    if (analysisData.image_data) {
+      setUploadedImage(analysisData.image_data)
+    }
     setResult(analysisData)
-    setActiveTab('new') // Switch to results view
+    setActiveTab('history-detail') // New state to indicate viewing from history
   }
 
   // Render results view
   if (result) {
     return (
       <div className="analysis-page">
-        <ResultsSection result={result} onReset={handleReset} />
+        {/* Tab Navigation - Show even when viewing results */}
+        <div className="analysis-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'new' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('new')
+              setResult(null)
+              setUploadedImage(null)
+              setAnalysisType(null)
+            }}
+          >
+            <PlusCircle size={20} />
+            New Analysis
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'history' || activeTab === 'history-detail' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('history')
+              setResult(null)
+              setUploadedImage(null)
+              setAnalysisType(null)
+            }}
+          >
+            <History size={20} />
+            History
+          </button>
+        </div>
+
+        <ResultsSection 
+          result={result} 
+          onReset={handleReset} 
+          authToken={token}
+          uploadedImage={uploadedImage}
+        />
       </div>
     )
   }
@@ -139,6 +185,34 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
   // Render main analysis page with tabs
   return (
     <div className="analysis-page">
+      {/* Tab Navigation */}
+      <div className="analysis-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'new' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('new')
+            setResult(null)
+            setUploadedImage(null)
+            setAnalysisType(null)
+          }}
+        >
+          <PlusCircle size={20} />
+          New Analysis
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'history' || activeTab === 'history-detail' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('history')
+            setResult(null)
+            setUploadedImage(null)
+            setAnalysisType(null)
+          }}
+        >
+          <History size={20} />
+          History
+        </button>
+      </div>
+
       {/* Tab Content */}
       {activeTab === 'history' ? (
         <HistorySection 

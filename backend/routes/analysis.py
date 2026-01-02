@@ -519,6 +519,67 @@ async def quick_analyze(
             os.unlink(temp_path)
 
 
+@router.post("/save-analysis")
+async def save_analysis(
+    analysis_data: dict,
+    current_user: dict = Depends(get_optional_current_user)
+):
+    """
+    Save complete analysis to user's history
+    Stores full analysis results including image, weather, and strategies
+    """
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required to save analysis"
+        )
+    
+    try:
+        analysis_collection = get_analysis_collection()
+        
+        # Generate unique analysis ID
+        analysis_id = str(uuid.uuid4())
+        
+        # Prepare data for MongoDB (convert numpy types)
+        clean_data = convert_numpy_types(analysis_data)
+        
+        # Add metadata
+        save_record = {
+            "analysis_id": analysis_id,
+            "user_id": str(current_user["_id"]),
+            "full_result": clean_data,  # Store complete analysis
+            "pitch_type": clean_data.get("final_classification", {}).get("prediction"),
+            "confidence": clean_data.get("final_classification", {}).get("confidence"),
+            "image_name": clean_data.get("image_name", "analysis_image.jpg"),
+            "image_data": clean_data.get("image_data"),  # Base64 encoded image
+            "weather_included": clean_data.get("weather") is not None,
+            "location": clean_data.get("weather", {}).get("location") if clean_data.get("weather") else None,
+            "match_info": clean_data.get("match_info"),
+            "processing_time": clean_data.get("processing_time"),
+            "created_at": datetime.utcnow(),
+            "saved_at": datetime.utcnow()
+        }
+        
+        # Insert into database
+        result = analysis_collection.insert_one(save_record)
+        
+        print(f"✓ Analysis saved for user {current_user.get('email')}: {analysis_id}")
+        
+        return {
+            "success": True,
+            "message": "Analysis saved successfully",
+            "analysis_id": analysis_id,
+            "saved_at": save_record["saved_at"].isoformat()
+        }
+        
+    except Exception as e:
+        print(f"❌ Error saving analysis: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save analysis: {str(e)}"
+        )
+
+
 @router.get("/classes")
 async def get_pitch_classes():
     """Get available pitch classification classes"""
