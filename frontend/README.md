@@ -43,6 +43,34 @@ Production files will be in `dist/` folder.
 
 ## 📱 Features Overview
 
+### AR Analysis (New!)
+- **Live Camera Feed** - Real-time pitch detection using device camera
+- **In-Browser AI** - ONNX models run directly in the browser
+- **2D Overlay** - AR-style bounding boxes and labels
+- **Two Analysis Modes:**
+  - **Tap to Analyze** - Single frame capture and analysis
+  - **Live Mode** - Continuous analysis at 1 FPS
+- **Two Analysis Types:**
+  - **Quick** - Client-side ONNX inference only
+  - **Complete** - ONNX + backend weather/strategy analysis
+- **Location Support** - Manual entry or GPS-based location
+- **Real-time Metrics** - Inference time, confidence scores
+- **Probability Display** - Top 4 pitch type predictions with bars
+
+#### AR Analysis Requirements:
+- Modern browser with camera support (Chrome, Edge, Safari)
+- HTTPS connection (or localhost for development)
+- Camera permissions granted
+- ONNX model files in `public/models/` directory
+
+#### AR Analysis Testing:
+1. Navigate to AR Analysis from the sidebar
+2. Click "Start Camera" and allow camera permissions
+3. Point camera at a cricket pitch image or screen
+4. Choose analysis mode (Tap or Live)
+5. For Quick analysis: See instant ONNX results with overlay
+6. For Complete analysis: Get full weather and strategy recommendations
+
 ### Upload Section
 - Drag & drop image upload
 - Image preview

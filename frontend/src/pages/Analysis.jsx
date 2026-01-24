@@ -21,12 +21,14 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
 
   // Fetch subscription status when component mounts or user changes
   useEffect(() => {
-    if (token) {
+    if (token && user) {
       fetchSubscriptionStatus()
     }
   }, [token, user?.subscription_type, user?.subscription_status])
 
   const fetchSubscriptionStatus = async () => {
+    if (!token) return // Don't fetch if not authenticated
+    
     try {
       const response = await axios.get(`${API_URL}/api/auth/subscription-status`, {
         headers: {
@@ -37,7 +39,10 @@ function Analysis({ token, onNavigate, user, onUserUpdate }) {
         setSubscriptionStatus(response.data)
       }
     } catch (err) {
-      console.error('Error fetching subscription:', err)
+      // Only log error if it's not a 401 (which is expected when not logged in)
+      if (err.response?.status !== 401) {
+        console.error('Error fetching subscription:', err)
+      }
     }
   }
 
