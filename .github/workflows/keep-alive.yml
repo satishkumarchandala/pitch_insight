@@ -60,20 +60,12 @@ jobs:
           # Try multiple endpoints
           success=false
           
-          # Try /health endpoint
-          if ping_endpoint "${BACKEND_URL}/health"; then
+          # Try /api/health endpoint first (primary health check)
+          if ping_endpoint "${BACKEND_URL}/api/health"; then
             success=true
           fi
           
-          # Try /api/health endpoint as fallback
-          if [ "$success" = false ]; then
-            echo ""
-            if ping_endpoint "${BACKEND_URL}/api/health"; then
-              success=true
-            fi
-          fi
-          
-          # Try root endpoint as last resort
+          # Try root endpoint as fallback
           if [ "$success" = false ]; then
             echo ""
             if ping_endpoint "${BACKEND_URL}/"; then
