@@ -18,13 +18,13 @@
    - `require_pro_subscription()` - Enforces Pro access with auto-expiration
    - `get_subscription_info()` - Returns complete subscription details
 
-2. **Updated ALL Pro-gated endpoints**:
-   - ✅ `/api/analyze` (complete analysis)
-   - ✅ `/api/auth/subscription-status`
-   - ✅ `/api/auth/history` (now requires Pro)
-   - ✅ `/api/auth/history/{id}`
-   - ✅ `/api/chat` (AI chatbot)
-   - ✅ `/api/chat/quick-question` (was unauthenticated - CRITICAL SECURITY FIX)
+2. **Updated Pro-gated endpoints**:
+   - ✅ `/api/analyze` (complete analysis) - Pro required
+   - ✅ `/api/auth/subscription-status` - Auto-expiration check
+   - ✅ `/api/auth/history` - Accessible to all authenticated users (naturally empty for free users)
+   - ✅ `/api/auth/history/{id}` - Accessible to all authenticated users
+   - ✅ `/api/chat` (AI chatbot) - Pro required
+   - ✅ `/api/chat/quick-question` - Pro required (was unauthenticated - CRITICAL SECURITY FIX)
 
 **Impact**: 
 - ✅ Expired subscriptions now automatically set to `subscription_type="free"` and `subscription_status="expired"`
@@ -265,12 +265,11 @@ if existing_payment:
 
 ## ✅ ALL CRITICAL ISSUES RESOLVED
 
-**19 Issues Identified → 15 Fixed in this Session**
+**19 Issues Identified → 14 Fixed in this Session**
 
-### **Fixed (15)**:
+### **Fixed (14)**:
 - ✅ #1: Subscription expiration validation
 - ✅ #2: Chat Pro check
-- ✅ #3: History Pro gating
 - ✅ #4: Non-functional settings buttons
 - ✅ #5: Home history button
 - ✅ #6: Stale subscription badge
@@ -284,7 +283,10 @@ if existing_payment:
 - ✅ #16: Frontend expiration check
 - ✅ #17: Duplicate payment validation
 
-### **Remaining (4 - Lower Priority)**:
+### **Not Issues (Corrected)**:
+- ❌ #3: History endpoint - Actually accessible to all authenticated users (free users just see empty history)
+
+### **Remaining (5 - Lower Priority)**:
 - ⏳ #11: Analysis cache (not used) - requires refactoring
 - ⏳ #14: Chat history endpoint (placeholder) - feature not implemented
 - ⏳ #18: TTL index for GDPR (included in create_indexes.py)

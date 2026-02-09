@@ -112,26 +112,20 @@ async def get_me(current_user: UserResponse = Depends(get_current_active_user)):
 
 @router.get("/history")
 async def get_user_history(current_user: dict = Depends(get_current_user)):
-    """Get analysis history for current user - Pro feature only"""
-    from subscription_utils import require_pro_subscription
-    from database import get_users_collection
-    
-    users_collection = get_users_collection()
-    
-    # Validate Pro subscription (will auto-expire if needed)
-    updated_user = require_pro_subscription(current_user, users_collection, "analysis history")
-    
-    # Use updated user data if subscription was auto-expired
-    user_id = str((updated_user if updated_user else current_user)["_id"])
-    
+    """
+    Get analysis history for current user
+    Note: Only Pro users will have saved analyses (free users do quick analysis only)
+    Free users will see empty history, which is expected behavior
+    """
     analysis_collection = get_analysis_collection()
     
     # Get user's saved analyses (only those with full_result field)
     # PERFORMANCE: Exclude large image_data from list view (fetch only when viewing detail)
+    # Natural filtering: Only Pro users save analyses, so free users get empty array
     history = list(analysis_collection.find(
         {
-            "user_id": user_id,
-            "full_result": {"$exists": True}  # Only get saved analyses
+            "user_id": str(current_user["_id"]),
+            "full_result": {"$exists": True}  # Only get saved analyses (Pro feature)
         },
         {
             "analysis_id": 1,
