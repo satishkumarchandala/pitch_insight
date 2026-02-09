@@ -74,6 +74,7 @@ class Token(BaseModel):
     """JWT token response"""
     access_token: str
     token_type: str = "bearer"
+    user: Optional[dict] = None  # Include user data for mobile app
 
 
 class TokenData(BaseModel):

@@ -180,21 +180,20 @@ def generate_match_strategy(pitch_type: str, features: dict, adjustments: list) 
 
 
 def check_pro_subscription(user: dict):
-    """Check if user has active Pro subscription"""
-    subscription_type = user.get("subscription_type", "free")
-    subscription_end = user.get("subscription_end_date")
+    """
+    Check if user has active Pro subscription with auto-expiration
+    DEPRECATED: Use subscription_utils.require_pro_subscription instead
+    This is kept for backward compatibility but now uses the centralized utility
+    """
+    from subscription_utils import require_pro_subscription
+    from database import get_users_collection
     
-    if subscription_type != "pro":
-        raise HTTPException(
-            status_code=403,
-            detail="Pro subscription required for complete analysis"
-        )
+    users_collection = get_users_collection()
+    # This will auto-expire and update database if needed
+    updated_user = require_pro_subscription(user, users_collection, "complete analysis")
     
-    if subscription_end and datetime.utcnow() > subscription_end:
-        raise HTTPException(
-            status_code=403,
-            detail="Your Pro subscription has expired. Please renew to continue."
-        )
+    # Return updated user data so caller can use fresh subscription status
+    return updated_user
 
 
 @router.post("/analyze", response_model=PitchAnalysisResponse)

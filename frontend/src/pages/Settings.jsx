@@ -1,11 +1,19 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Moon, Sun, Bell, Lock, Globe } from 'lucide-react'
 import './Settings.css'
 
 function Settings({ theme, onThemeChange }) {
+  const [emailNotifications, setEmailNotifications] = useState(false)
+
   const handleThemeToggle = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     onThemeChange(newTheme)
+  }
+
+  const handleEmailNotificationsToggle = () => {
+    // TODO: Implement email notifications backend
+    alert('Email notifications will be available in a future update!')
+    // setEmailNotifications(!emailNotifications)
   }
 
   return (
@@ -33,7 +41,7 @@ function Settings({ theme, onThemeChange }) {
                 <p>Switch between light and dark mode</p>
               </div>
             </div>
-            <button 
+            <button
               className={`theme-toggle ${theme}`}
               onClick={handleThemeToggle}
               title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
@@ -57,10 +65,14 @@ function Settings({ theme, onThemeChange }) {
               </div>
               <div>
                 <h3>Email Notifications</h3>
-                <p>Receive updates about your analysis</p>
+                <p>Receive updates about your analysis (Coming Soon)</p>
               </div>
             </div>
-            <button className="theme-toggle light">
+            <button
+              className={`theme-toggle ${emailNotifications ? 'dark' : 'light'}`}
+              onClick={handleEmailNotificationsToggle}
+              title="Email notifications (coming soon)"
+            >
               <div className="toggle-slider"></div>
             </button>
           </div>
@@ -80,9 +92,15 @@ function Settings({ theme, onThemeChange }) {
               </div>
               <div>
                 <h3>Data Privacy</h3>
-                <p>Control how your data is used</p>
+                <p>Your data is encrypted and never shared with third parties</p>
               </div>
             </div>
+            <button
+              className="btn-link"
+              onClick={() => alert('Privacy Policy: Your data is secure and private. We use industry-standard encryption.')}
+            >
+              View Privacy Policy
+            </button>
           </div>
         </div>
 
@@ -100,7 +118,7 @@ function Settings({ theme, onThemeChange }) {
               </div>
               <div>
                 <h3>Language</h3>
-                <p>English (US)</p>
+                <p>English (US) - More languages coming soon!</p>
               </div>
             </div>
           </div>

@@ -3,6 +3,14 @@ import { Activity, TrendingUp, FileText } from 'lucide-react'
 import './Home.css'
 
 function Home({ user, onNavigate }) {
+  const handleHistoryClick = () => {
+    if (!user) {
+      alert('Please sign in to view your analysis history')
+      return
+    }
+    onNavigate('history')
+  }
+
   return (
     <div className="home-page">
       <div className="hero-section">
@@ -22,14 +30,14 @@ function Home({ user, onNavigate }) {
         </div>
 
         <div className="action-cards">
-          <div className="action-card" onClick={() => onNavigate('history')}>
+          <div className="action-card" onClick={handleHistoryClick}>
             <div className="card-icon">
               <FileText size={40} />
             </div>
             <h3>Your Analysis</h3>
             <p>View your previous pitch analysis history and insights</p>
             <button className="card-btn">
-              View History
+              {user ? 'View History' : 'Sign In to View History'}
             </button>
           </div>
 

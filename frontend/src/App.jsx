@@ -25,7 +25,7 @@ function App() {
     const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
     const storedTheme = localStorage.getItem('theme') || 'light'
-    
+
     if (storedToken && storedUser) {
       setToken(storedToken)
       setUser(JSON.parse(storedUser))
@@ -56,13 +56,18 @@ function App() {
 
   const refreshUserData = async () => {
     if (!token) return
-    
+
     try {
       const userData = await authAPI.getMe()
       setUser(userData)
       localStorage.setItem('user', JSON.stringify(userData))
+
+      console.log('✓ User data refreshed:', userData)
+
+      return userData
     } catch (error) {
       console.error('Error refreshing user data:', error)
+      return null
     }
   }
 
@@ -87,18 +92,18 @@ function App() {
         return <Settings theme={theme} onThemeChange={handleThemeChange} />
       case 'profile':
         return user ? (
-          <Profile 
-            user={user} 
-            token={token} 
+          <Profile
+            user={user}
+            token={token}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
           />
         ) : null
       case 'history':
         return user ? (
-          <Profile 
-            user={user} 
-            token={token} 
+          <Profile
+            user={user}
+            token={token}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
           />
@@ -110,18 +115,18 @@ function App() {
 
   return (
     <div className="app">
-      <Header 
-        user={user} 
+      <Header
+        user={user}
         onLoginClick={() => setShowAuth(true)}
         onLogout={handleLogout}
         currentPage={currentPage}
         onNavigate={handleNavigate}
         onSidebarToggle={setSidebarOpen}
       />
-      
-      <main 
+
+      <main
         className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}
-        style={{ 
+        style={{
           marginLeft: window.innerWidth > 768 ? (sidebarOpen ? '280px' : '80px') : '0'
         }}
       >
@@ -133,7 +138,7 @@ function App() {
       <Footer sidebarOpen={sidebarOpen} />
 
       {/* Chat Widget - Available on all pages */}
-      <ChatWidget 
+      <ChatWidget
         user={user}
         token={token}
         currentAnalysisId={currentAnalysisId}
@@ -141,8 +146,8 @@ function App() {
       />
 
       {showAuth && (
-        <Auth 
-          onLogin={handleLogin} 
+        <Auth
+          onLogin={handleLogin}
           onClose={() => setShowAuth(false)}
         />
       )}

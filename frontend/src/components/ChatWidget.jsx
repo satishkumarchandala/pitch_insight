@@ -12,9 +12,12 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
   const [inputMessage, setInputMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
-  
-  // Check if user is pro
-  const isPro = user && user.subscription_type === 'pro'
+
+  // Check if user is pro (with expiration check)
+  const isPro = user &&
+    user.subscription_type === 'pro' &&
+    user.subscription_status === 'active' &&
+    (!user.subscription_end_date || new Date(user.subscription_end_date) > new Date())
 
   const quickQuestions = [
     "Explain this pitch analysis",
@@ -108,9 +111,9 @@ function ChatWidget({ user, token, currentAnalysisId, sidebarOpen = true }) {
               <span>Pitch Insight AI</span>
             </div>
             <div className="header-buttons">
-              <button 
-                onClick={() => setIsMaximized(!isMaximized)} 
-                className="header-btn" 
+              <button
+                onClick={() => setIsMaximized(!isMaximized)}
+                className="header-btn"
                 title={isMaximized ? "Restore" : "Maximize"}
               >
                 {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}

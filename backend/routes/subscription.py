@@ -29,8 +29,22 @@ def get_plan_amount(plan_type: str) -> int:
 
 
 def calculate_subscription_end_date(duration_months: int) -> datetime:
-    """Calculate subscription end date"""
-    return datetime.utcnow() + timedelta(days=duration_months * 30)
+    """
+    Calculate subscription end date accurately
+    Uses relativedelta for proper month arithmetic (handles Feb, 31-day months correctly)
+    """
+    from dateutil.relativedelta import relativedelta
+    
+    start_date = datetime.utcnow()
+    
+    # For yearly subscription (12 months), use relativedelta
+    if duration_months == 12:
+        end_date = start_date + relativedelta(years=1)
+    else:
+        # For monthly (1 month), use relativedelta
+        end_date = start_date + relativedelta(months=duration_months)
+    
+    return end_date
 
 
 def get_subscription_access(user: dict) -> dict:
@@ -153,6 +167,24 @@ async def verify_subscription_payment(
     
     # Update user subscription
     users_collection = get_users_collection()
+    
+    # Check for duplicate payment (prevent double-processing if webhook fires twice)
+    existing_payment = users_collection.find_one({
+        "_id": ObjectId(current_user["_id"]),
+        "payment_history.payment_id": payment_id
+    })
+    
+    if existing_payment:
+        print(f"⚠️ Duplicate payment detected: {payment_id} for user {current_user['email']}")
+        return {
+            "success": True,
+            "message": "Payment already processed",
+            "subscription": {
+                "type": existing_payment.get("subscription_type"),
+                "status": existing_payment.get("subscription_status"),
+                "end_date": existing_payment.get("subscription_end_date")
+            }
+        }
     
     payment_record = {
         "payment_id": payment_id,

@@ -61,7 +61,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
           'Authorization': `Bearer ${authToken}`
         }
       });
-      
+
       // If full_result is available (saved analysis), pass it to the parent
       if (response.data.full_result) {
         setSelectedAnalysis(response.data.full_result);
@@ -158,26 +158,33 @@ const HistorySection = ({ onViewDetails, authToken }) => {
       <div className="history-grid">
         {history.map((item) => (
           <div key={item.analysis_id} className="history-card">
-            {/* Image Preview */}
-            {item.image_data && (
-              <div className="history-card-image">
-                <img 
-                  src={item.image_data} 
-                  alt={item.image_name}
-                  loading="lazy"
-                />
-                <div className="image-overlay">
-                  <button
-                    onClick={() => handleViewDetails(item.analysis_id)}
-                    className="view-full-btn"
-                  >
-                    <Eye size={20} />
-                    View Full Analysis
-                  </button>
+            {/* Image Preview - Show placeholder if not loaded */}
+            <div className="history-card-image">
+              {item.image_data ? (
+                <>
+                  <img
+                    src={item.image_data}
+                    alt={item.image_name}
+                    loading="lazy"
+                  />
+                  <div className="image-overlay">
+                    <button
+                      onClick={() => handleViewDetails(item.analysis_id)}
+                      className="view-full-btn"
+                    >
+                      <Eye size={20} />
+                      View Full Analysis
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="image-placeholder">
+                  <ImageIcon size={48} />
+                  <p>Click to view</p>
                 </div>
-              </div>
-            )}
-            
+              )}
+            </div>
+
             <div className="history-card-header">
               <div className="history-card-title">
                 <ImageIcon size={16} />
@@ -203,7 +210,7 @@ const HistorySection = ({ onViewDetails, authToken }) => {
 
             <div className="history-card-body">
               <div className="history-pitch-type">
-                <div 
+                <div
                   className="pitch-type-badge"
                   style={{ backgroundColor: getPitchTypeColor(item.pitch_type) }}
                 >

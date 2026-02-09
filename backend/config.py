@@ -32,10 +32,11 @@ PORT = int(os.getenv("PORT", 8000))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # CORS Configuration
+# Allow web frontend, mobile app (Expo), and vercel deployment
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pitch-insight-frontend.vercel.app"
-).split(",")
+    "*"
+).split(",") if os.getenv("ALLOWED_ORIGINS") != "*" else ["*"]
 
 # Subscription Plans
 SUBSCRIPTION_PLANS = {
@@ -68,4 +69,4 @@ SUBSCRIPTION_PLANS = {
 
 # Model paths
 YOLO_MODEL_PATH = "pitch_yolov8_best.onnx"
-CLASSIFIER_MODEL_PATH = "best_pitch_classifier.onnx"
+CLASSIFIER_MODEL_PATH = "pitch_classifier.onnx"  # Corrected to match actual file

@@ -96,7 +96,12 @@ async def login(user_credentials: UserLogin):
     
     print(f"✓ User logged in: {user['email']}")
     
-    return Token(access_token=access_token, token_type="bearer")
+    # Return token with user data
+    return Token(
+        access_token=access_token, 
+        token_type="bearer",
+        user=user_helper(user)
+    )
 
 
 @router.get("/me", response_model=UserResponse)
@@ -107,19 +112,31 @@ async def get_me(current_user: UserResponse = Depends(get_current_active_user)):
 
 @router.get("/history")
 async def get_user_history(current_user: dict = Depends(get_current_user)):
-    """Get analysis history for current user - only saved analyses with full results"""
+    """Get analysis history for current user - Pro feature only"""
+    from subscription_utils import require_pro_subscription
+    from database import get_users_collection
+    
+    users_collection = get_users_collection()
+    
+    # Validate Pro subscription (will auto-expire if needed)
+    updated_user = require_pro_subscription(current_user, users_collection, "analysis history")
+    
+    # Use updated user data if subscription was auto-expired
+    user_id = str((updated_user if updated_user else current_user)["_id"])
+    
     analysis_collection = get_analysis_collection()
     
     # Get user's saved analyses (only those with full_result field)
+    # PERFORMANCE: Exclude large image_data from list view (fetch only when viewing detail)
     history = list(analysis_collection.find(
         {
-            "user_id": str(current_user["_id"]),
+            "user_id": user_id,
             "full_result": {"$exists": True}  # Only get saved analyses
         },
         {
             "analysis_id": 1,
             "image_name": 1,
-            "image_data": 1,  # Include base64 image data
+            # "image_data": 1,  # EXCLUDED from list view - only fetch in detail view
             "pitch_type": 1,
             "confidence": 1,
             "match_info": 1,
@@ -141,6 +158,7 @@ async def get_user_history(current_user: dict = Depends(get_current_user)):
         "count": len(history),
         "history": history
     }
+
 
 
 @router.get("/history/{analysis_id}")
@@ -211,21 +229,17 @@ async def delete_analysis(
 
 @router.get("/subscription-status")
 async def get_subscription_status(current_user: dict = Depends(get_current_user)):
-    """Get current subscription status"""
-    subscription_type = current_user.get("subscription_type", "free")
-    subscription_status = current_user.get("subscription_status", "active")
+    """Get current subscription status with automatic expiration check"""
+    from subscription_utils import get_subscription_info
+    from database import get_users_collection
     
-    # Check if user can access complete analysis (Pro feature)
-    can_access = (
-        subscription_type == "pro" and 
-        subscription_status == "active"
-    )
+    users_collection = get_users_collection()
+    
+    # This will auto-check expiration and update database if needed
+    subscription_info = get_subscription_info(current_user, users_collection)
     
     return {
         "success": True,
-        "subscription_type": subscription_type,
-        "subscription_status": subscription_status,
-        "subscription_start_date": current_user.get("subscription_start_date"),
-        "subscription_end_date": current_user.get("subscription_end_date"),
-        "can_access_complete_analysis": can_access
+        **subscription_info  # Include all subscription details
     }
+

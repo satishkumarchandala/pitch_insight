@@ -62,18 +62,24 @@ async def chat_with_ai(
             detail="Authentication required to use chatbot. Please sign in."
         )
     
-    # Check if user has pro subscription
-    if current_user.get("subscription_type", "free") != "pro":
-        raise HTTPException(
-            status_code=403,
-            detail="Chatbot is a Pro feature. Upgrade to Pro to access AI-powered cricket insights."
-        )
+    # Validate Pro subscription with auto-expiration check
+    from subscription_utils import require_pro_subscription
+    from database import get_users_collection
+    
+    users_collection = get_users_collection()
+    
+    # This will auto-expire and update database if subscription has ended
+    updated_user = require_pro_subscription(current_user, users_collection, "AI chatbot")
+    
+    # Use updated user for rest of request
+    active_user = updated_user if updated_user else current_user
     
     if not GEMINI_API_KEY or not client:
         raise HTTPException(
             status_code=503,
             detail="AI Chat service is not available. Please configure a valid GEMINI_API_KEY. Get one free at: https://aistudio.google.com/app/apikey"
         )
+
     
     try:
         # Build context from analysis if available
@@ -147,8 +153,25 @@ async def get_chat_history(current_user: dict = Depends(get_optional_current_use
 
 
 @router.post("/quick-question")
-async def quick_question(question: str):
-    """Quick cricket question without context"""
+async def quick_question(
+    question: str,
+    current_user: Optional[dict] = Depends(get_optional_current_user)
+):
+    """Quick cricket question - Pro feature only to prevent abuse"""
+    # Require authentication to prevent API abuse
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required. Please sign in to use AI features."
+        )
+    
+    # Validate Pro subscription
+    from subscription_utils import require_pro_subscription
+    from database import get_users_collection
+    
+    users_collection = get_users_collection()
+    require_pro_subscription(current_user, users_collection, "quick AI questions")
+    
     if not GEMINI_API_KEY:
         raise HTTPException(
             status_code=503,
@@ -171,3 +194,4 @@ async def quick_question(question: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
