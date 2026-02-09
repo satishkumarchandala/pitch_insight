@@ -1,0 +1,92 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Backend Server
+        run: |
+          echo "🏓 Pinging backend server at $(date)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Get backend URL from secrets
+          BACKEND_URL="${{ secrets.BACKEND_URL }}"
+          
+          # Check if BACKEND_URL is set
+          if [ -z "$BACKEND_URL" ]; then
+            echo "❌ ERROR: BACKEND_URL secret not set"
+            echo "📝 Please add BACKEND_URL to repository secrets"
+            echo "   Go to: Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          
+          echo "🎯 Target: $BACKEND_URL"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Function to ping an endpoint with retries
+          ping_endpoint() {
+            local endpoint=$1
+            local max_retries=3
+            local retry=0
+            
+            echo "📍 Checking: $endpoint"
+            
+            while [ $retry -lt $max_retries ]; do
+              response=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$endpoint" 2>&1 || echo "000")
+              
+              if [ "$response" = "200" ]; then
+                echo "  ✅ SUCCESS (HTTP $response)"
+                return 0
+              else
+                retry=$((retry + 1))
+                if [ $retry -lt $max_retries ]; then
+                  echo "  ⚠️  Attempt $retry failed (HTTP $response), retrying..."
+                  sleep 5
+                else
+                  echo "  ❌ FAILED after $max_retries attempts (HTTP $response)"
+                  return 1
+                fi
+              fi
+            done
+          }
+          
+          # Try multiple endpoints
+          success=false
+          
+          # Try /health endpoint
+          if ping_endpoint "${BACKEND_URL}/health"; then
+            success=true
+          fi
+          
+          # Try /api/health endpoint as fallback
+          if [ "$success" = false ]; then
+            echo ""
+            if ping_endpoint "${BACKEND_URL}/api/health"; then
+              success=true
+            fi
+          fi
+          
+          # Try root endpoint as last resort
+          if [ "$success" = false ]; then
+            echo ""
+            if ping_endpoint "${BACKEND_URL}/"; then
+              success=true
+            fi
+          fi
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          if [ "$success" = true ]; then
+            echo "✅ Backend is alive and responding!"
+          else
+            echo "⚠️  Warning: All endpoints failed"
+            echo "    Backend might be spinning up (this is normal)"
+          fi
+          echo "🕐 Completed at $(date)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
