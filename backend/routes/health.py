@@ -30,6 +30,17 @@ async def health_check():
     )
 
 
+@router.get("/api/ping")
+async def keep_alive_ping():
+    """Keep-alive ping endpoint that counts as traffic (not a health check)"""
+    return {
+        "status": "alive",
+        "message": "Server is awake",
+        "timestamp": datetime.utcnow().isoformat(),
+        "uptime": "active"
+    }
+
+
 @router.get("/api/stats")
 async def get_stats():
     """Get API performance statistics"""

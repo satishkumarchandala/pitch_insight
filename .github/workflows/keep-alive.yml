@@ -57,12 +57,20 @@ jobs:
             done
           }
           
-          # Try multiple endpoints
+          # Try multiple endpoints (use real API endpoints, not health checks)
           success=false
           
-          # Try /api/health endpoint first (primary health check)
-          if ping_endpoint "${BACKEND_URL}/api/health"; then
+          # Try /api/ping endpoint first (dedicated keep-alive that counts as real traffic)
+          if ping_endpoint "${BACKEND_URL}/api/ping"; then
             success=true
+          fi
+          
+          # Try /api/stats endpoint as backup
+          if [ "$success" = false ]; then
+            echo ""
+            if ping_endpoint "${BACKEND_URL}/api/stats"; then
+              success=true
+            fi
           fi
           
           # Try root endpoint as fallback
@@ -70,6 +78,20 @@ jobs:
             echo ""
             if ping_endpoint "${BACKEND_URL}/"; then
               success=true
+            fi
+          fi
+          
+          # Try /api/auth/subscription-status as final fallback (this will fail with 401 but still counts as traffic)
+          if [ "$success" = false ]; then
+            echo ""
+            # Even a 401 response counts as traffic to keep server alive
+            response=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "${BACKEND_URL}/api/auth/subscription-status" 2>&1 || echo "000")
+            echo "📍 Checking: ${BACKEND_URL}/api/auth/subscription-status"
+            if [ "$response" = "401" ] || [ "$response" = "200" ]; then
+              echo "  ✅ SUCCESS (HTTP $response - server is alive)"
+              success=true
+            else
+              echo "  ❌ FAILED (HTTP $response)"
             fi
           fi
           
