@@ -132,21 +132,39 @@ class PitchAnalyzer:
         
         # Filter contours by area and aspect ratio (cracks are usually elongated)
         crack_contours = []
+        thin_cracks = []  # For web-like crack patterns
+        
         for contour in contours:
             area = cv2.contourArea(contour)
-            if area > 50:  # Minimum area threshold
+            if area > 20:  # Lowered threshold to catch thinner cracks
                 x, y, w, h = cv2.boundingRect(contour)
                 aspect_ratio = max(w, h) / min(w, h) if min(w, h) > 0 else 0
-                if aspect_ratio > 3:  # Elongated shapes (likely cracks)
+                
+                # Main cracks: elongated shapes
+                if aspect_ratio > 2.5 and area > 30:  # Reduced aspect ratio requirement
                     crack_contours.append(contour)
+                # Web-like cracks: smaller but still significant
+                elif aspect_ratio > 1.5 and area > 20:
+                    thin_cracks.append(contour)
         
         # Calculate crack density
         total_pixels = image.shape[0] * image.shape[1]
         crack_pixels = cv2.countNonZero(edges)
         crack_density = (crack_pixels / total_pixels) * 100
         
+        # Total crack count (major cracks + thin cracks)
+        num_major_cracks = len(crack_contours)
+        num_thin_cracks = len(thin_cracks)
+        num_cracks = num_major_cracks + num_thin_cracks
+        
+        # If crack density is high but contour count is low, estimate from density
+        # This handles web-like patterns better
+        if crack_density > 3 and num_cracks < 5:
+            # Estimate crack count from density for web-like patterns
+            estimated_cracks = int(crack_density * 5)  # Heuristic: density * 5
+            num_cracks = max(num_cracks, estimated_cracks)
+        
         # Classify crack severity
-        num_cracks = len(crack_contours)
         if crack_density > 5 or num_cracks > 20:
             severity = "High"
             description = "Heavily cracked surface"
@@ -165,6 +183,8 @@ class PitchAnalyzer:
             'severity': severity,
             'description': description,
             'num_cracks': num_cracks,
+            'num_major_cracks': num_major_cracks,
+            'num_thin_cracks': num_thin_cracks,
             'crack_pixels': crack_pixels,
             'edges_mask': edges
         }

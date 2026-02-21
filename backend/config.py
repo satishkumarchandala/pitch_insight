@@ -32,11 +32,17 @@ PORT = int(os.getenv("PORT", 8000))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # CORS Configuration
-# Allow web frontend, mobile app (Expo), and vercel deployment
+# Allow web frontend, mobile app (Expo), localhost for development
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
-    "*"
+    "*"  # Default to allow all in development
 ).split(",") if os.getenv("ALLOWED_ORIGINS") != "*" else ["*"]
+
+# For development, explicitly allow common localhost ports
+if DEBUG or "*" in ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS = [
+        "*",  # Allow all origins
+    ]
 
 # Subscription Plans
 SUBSCRIPTION_PLANS = {

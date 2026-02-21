@@ -1,0 +1,25 @@
+{
+    "expo": {
+        "name": "Pitch Insight",
+        "slug": "pitch-insight",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "userInterfaceStyle": "automatic",
+        "splash": {
+            "backgroundColor": "#0f172a",
+            "resizeMode": "contain"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true
+        },
+        "android": {
+            "package": "com.pitchinsight.app",
+            "adaptiveIcon": {
+                "backgroundColor": "#0f172a"
+            }
+        }
+    }
+}
