@@ -12,6 +12,7 @@ from PIL import Image
 from pathlib import Path
 from typing import Dict, Tuple, Optional
 from pitch_analyzer import PitchAnalyzer
+from torchvision import transforms
 
 
 class CompletePitchPipeline:
@@ -58,10 +59,14 @@ class CompletePitchPipeline:
         # Classes
         self.classes = ['batting_friendly', 'bowling_friendly', 'seam_friendly', 'spin_friendly']
         
-        # Normalization parameters (ImageNet)
-        self.mean = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(1, 3, 1, 1)
-        self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(1, 3, 1, 1)
-        
+        # Image transform for classifier - IDENTICAL to complete_pipeline.py
+        # Uses PIL-based bilinear resize with anti-aliasing + ImageNet normalisation
+        self._classifier_transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+
         print("✅ ONNX Pipeline initialized successfully!\n")
     
     def preprocess_yolo_image(self, image: np.ndarray) -> Tuple[np.ndarray, float, Tuple[int, int]]:
@@ -103,87 +108,106 @@ class CompletePitchPipeline:
         
         return image_batch, scale, (left, top)
     
-    def postprocess_yolo_output(self, output: np.ndarray, original_shape: Tuple[int, int], 
-                                 scale: float, padding: Tuple[int, int], conf_threshold: float = 0.5) -> Optional[Tuple[np.ndarray, Tuple[int, int, int, int]]]:
+    def postprocess_yolo_output(self, output: np.ndarray, original_shape: Tuple[int, int],
+                                 scale: float, padding: Tuple[int, int], conf_threshold: float = 0.5) -> Optional[Tuple[Tuple[int, int, int, int], float]]:
         """
-        Postprocess YOLO ONNX output to get bounding boxes
-        
+        Postprocess YOLO ONNX output to get bounding boxes using NMS.
+
         Args:
             output: Raw YOLO output
             original_shape: Original image shape (h, w)
             scale: Scale factor used in preprocessing
             padding: Padding offsets (left, top)
             conf_threshold: Confidence threshold
-            
+
         Returns:
-            None or (bbox, confidence)
+            None or (bbox, confidence) where bbox is (x1, y1, x2, y2)
         """
         # YOLOv8 output format: [1, 84, 8400] or [1, 8400, 84]
-        # 84 = 4 (bbox) + 80 (classes) but we only have 1 class
-        
         if len(output.shape) == 3:
             output = output[0]  # Remove batch dimension
-        
+
         # Ensure shape is [num_detections, features]
         if output.shape[0] < output.shape[1]:
             output = output.T
-        
-        # For single-class YOLO: shape should be [8400, 5] where 5 = [x, y, w, h, conf]
-        # Extract boxes and confidence
+
+        # Extract boxes [cx, cy, w, h] and confidences
         if output.shape[1] >= 5:
-            boxes = output[:, :4]  # x_center, y_center, width, height (in 640x640 scale)
-            confidences = output[:, 4]  # confidence scores
+            boxes_cxcywh = output[:, :4]  # in 640x640 padded space
+            confidences = output[:, 4]
         else:
-            # Fallback: assume all features are boxes with max score as confidence
-            boxes = output[:, :4]
-            confidences = output[:, 4:].max(axis=1) if output.shape[1] > 4 else np.ones(len(boxes))
-        
-        # Filter by confidence threshold
+            boxes_cxcywh = output[:, :4]
+            confidences = output[:, 4:].max(axis=1) if output.shape[1] > 4 else np.ones(len(output))
+
+        # Pre-filter by confidence
         mask = confidences >= conf_threshold
         if not mask.any():
             print(f"   No detections above threshold {conf_threshold}")
             return None
-        
-        boxes = boxes[mask]
+
+        boxes_cxcywh = boxes_cxcywh[mask]
         confidences = confidences[mask]
-        
-        # Get best detection
-        best_idx = confidences.argmax()
-        box = boxes[best_idx]
-        confidence = confidences[best_idx]
-        
-        # YOLOv8 boxes are in the format: [x_center, y_center, width, height] 
-        # in the 640x640 input image coordinate system (WITH padding)
-        x_center, y_center, width, height = box
-        
-        # CRITICAL: Remove letterbox padding offsets BEFORE scaling
+
+        # Convert cx,cy,w,h → x1,y1,w,h for NMS (still in padded 640x640 space)
+        nms_boxes = []
+        for cx, cy, bw, bh in boxes_cxcywh:
+            x1 = float(cx - bw / 2)
+            y1 = float(cy - bh / 2)
+            nms_boxes.append([x1, y1, float(bw), float(bh)])
+
+        # Apply Non-Maximum Suppression
+        indices = cv2.dnn.NMSBoxes(
+            nms_boxes,
+            confidences.tolist(),
+            score_threshold=conf_threshold,
+            nms_threshold=0.45
+        )
+
+        if len(indices) == 0:
+            print("   No detections survived NMS")
+            return None
+
+        # Flatten indices (OpenCV returns nested list in some versions)
+        if isinstance(indices, np.ndarray):
+            indices = indices.flatten()
+        else:
+            indices = [i[0] if isinstance(i, (list, tuple)) else i for i in indices]
+
+        # Pick highest-confidence box after NMS
+        best_idx = indices[np.argmax(confidences[indices])]
+        best_box_cxcywh = boxes_cxcywh[best_idx]
+        confidence = float(confidences[best_idx])
+
+        cx, cy, bw, bh = best_box_cxcywh
+
+        # Remove letterbox padding offsets BEFORE scaling back to original image
         left_pad, top_pad = padding
-        x_center_no_pad = x_center - left_pad
-        y_center_no_pad = y_center - top_pad
-        
-        # Convert to original image coordinates
-        x_center_orig = x_center_no_pad / scale
-        y_center_orig = y_center_no_pad / scale
-        width_orig = width / scale
-        height_orig = height / scale
-        
-        # Convert from center format to corner format
-        x1 = int(x_center_orig - width_orig / 2)
-        y1 = int(y_center_orig - height_orig / 2)
-        x2 = int(x_center_orig + width_orig / 2)
-        y2 = int(y_center_orig + height_orig / 2)
-        
+        cx_no_pad = cx - left_pad
+        cy_no_pad = cy - top_pad
+
+        # Scale back to original image coordinates
+        cx_orig = cx_no_pad / scale
+        cy_orig = cy_no_pad / scale
+        bw_orig = bw / scale
+        bh_orig = bh / scale
+
+        # Convert to corner format
+        x1 = int(cx_orig - bw_orig / 2)
+        y1 = int(cy_orig - bh_orig / 2)
+        x2 = int(cx_orig + bw_orig / 2)
+        y2 = int(cy_orig + bh_orig / 2)
+
         # Clip to image bounds
         h, w = original_shape
         x1 = max(0, min(x1, w))
         y1 = max(0, min(y1, h))
         x2 = max(0, min(x2, w))
         y2 = max(0, min(y2, h))
-        
-        print(f"   Debug: Raw box (with padding): {box}, Confidence: {confidence:.4f}")
+
+        print(f"   Debug: Best box after NMS (padded space): cx={cx:.1f}, cy={cy:.1f}, w={bw:.1f}, h={bh:.1f}, conf={confidence:.4f}")
         print(f"   Debug: Final bbox (original image): ({x1}, {y1}, {x2}, {y2})")
-        
-        return (x1, y1, x2, y2), float(confidence)
+
+        return (x1, y1, x2, y2), confidence
     
     def detect_pitch(self, image_path: str, conf_threshold: float = 0.25) -> Tuple[Optional[np.ndarray], Optional[Tuple[int, int, int, int]]]:
         """
@@ -244,33 +268,28 @@ class CompletePitchPipeline:
     
     def preprocess_classifier_image(self, image: np.ndarray) -> np.ndarray:
         """
-        Preprocess image for classifier ONNX model
-        
+        Preprocess image for classifier ONNX model.
+
+        Uses torchvision.transforms pipeline identical to the .pt pipeline so
+        that the input tensor fed to the ONNX model is bit-for-bit the same
+        as the one fed to the PyTorch model (PIL-based bilinear with anti-aliasing,
+        then ImageNet normalisation).
+
         Args:
             image: BGR image from OpenCV
-            
+
         Returns:
-            Preprocessed tensor
+            Preprocessed float32 NCHW tensor ready for ONNX Runtime
         """
-        # Convert to RGB
+        # Convert BGR → RGB and wrap in PIL (matches torchvision pipeline exactly)
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
-        # Resize to 224x224
-        image_resized = cv2.resize(image_rgb, (224, 224))
-        
-        # Convert to float and normalize to [0, 1]
-        image_float = image_resized.astype(np.float32) / 255.0
-        
-        # Transpose to CHW format
-        image_chw = np.transpose(image_float, (2, 0, 1))
-        
-        # Add batch dimension
-        image_batch = np.expand_dims(image_chw, axis=0)
-        
-        # Normalize with ImageNet mean/std
-        image_normalized = (image_batch - self.mean) / self.std
-        
-        return image_normalized.astype(np.float32)
+        pil_image = Image.fromarray(image_rgb)
+
+        # Apply the SAME transform chain used by complete_pipeline.py
+        img_tensor = self._classifier_transform(pil_image)  # shape: [3, 224, 224]
+
+        # Add batch dimension and convert to numpy float32 for ONNX Runtime
+        return img_tensor.unsqueeze(0).numpy().astype(np.float32)
     
     def classify_pitch(self, pitch_image: np.ndarray) -> Tuple[str, float, np.ndarray]:
         """
@@ -305,87 +324,108 @@ class CompletePitchPipeline:
         features: Dict
     ) -> Tuple[str, float, np.ndarray, Dict]:
         """
-        Adjust ML classification based on extracted features using cricket logic
-        
+        Adjust ML classification based on extracted features using cricket logic.
+
+        Synchronized with complete_pipeline.py — uses an accumulator dict so all
+        rules fire independently before a single normalisation pass, preventing
+        sequential mutations from skewing earlier rule effects.
+
         Cricket Pitch Rules:
         - High grass coverage → More swing → Bowling-friendly (helps fast bowlers)
         - Many cracks → More spin → Spin-friendly (helps spinners)
         - Dry pitch + low grass → Seam movement → Seam-friendly (helps seamers)
         - Low cracks + moderate grass → Easier batting → Batting-friendly
-        
+        - Very dry + many cracks → Strong spin-friendly
+        - Wet/Damp + High grass → Strong bowling-friendly
+
         Args:
             ml_probabilities: Original ML probabilities
             features: Extracted pitch features
-            
+
         Returns:
             (final_class, confidence, adjusted_probs, adjustment_info)
         """
+        # Start with ML probabilities; collect per-class adjustments separately
         adjusted_probs = ml_probabilities.copy()
-        adjustments = []
+        adjustments = {
+            'batting_friendly': 0.0,
+            'bowling_friendly': 0.0,
+            'seam_friendly': 0.0,
+            'spin_friendly': 0.0
+        }
         reasons = []
-        
-        # Extract key features
-        grass_pct = features['grass_coverage']['percentage']
-        crack_severity = features['crack_analysis']['severity']
-        moisture_level = features['moisture_level']['level']
-        color_type = features['color_profile']['color_type']
-        
-        # Rule 1: High grass → Bowling-friendly
-        if grass_pct > 50:
-            boost = 0.15
-            adjusted_probs[1] += boost  # bowling_friendly
-            adjustments.append(f"+{boost:.0%} Bowling-friendly")
-            reasons.append(f"High grass coverage ({grass_pct:.1f}%) favors fast bowlers")
-        
-        # Rule 2: Many cracks → Spin-friendly
-        if crack_severity in ['High', 'Severe']:
-            boost = 0.20
-            adjusted_probs[3] += boost  # spin_friendly
-            adjustments.append(f"+{boost:.0%} Spin-friendly")
-            reasons.append(f"Severe cracks ({crack_severity}) will assist spinners")
-        
-        # Rule 3: Dry + Low grass → Seam-friendly
-        if moisture_level == 'Dry' and grass_pct < 30:
-            boost = 0.15
-            adjusted_probs[2] += boost  # seam_friendly
-            adjustments.append(f"+{boost:.0%} Seam-friendly")
-            reasons.append("Dry pitch with low grass favors seam bowling")
-        
-        # Rule 4: Wet pitch → Bowling-friendly
-        if moisture_level == 'Wet':
-            boost = 0.12
-            adjusted_probs[1] += boost  # bowling_friendly
-            adjustments.append(f"+{boost:.0%} Bowling-friendly")
-            reasons.append("Wet pitch assists swing bowling")
-        
-        # Rule 5: Low cracks + good grass → Batting-friendly
-        if crack_severity in ['None', 'Low'] and 20 < grass_pct < 40:
-            boost = 0.10
-            adjusted_probs[0] += boost  # batting_friendly
-            adjustments.append(f"+{boost:.0%} Batting-friendly")
-            reasons.append("Minimal cracks and moderate grass = good batting surface")
-        
-        # Rule 6: Brown/Dark color + low grass → Spin-friendly
-        if color_type in ['Brown', 'Dark'] and grass_pct < 25:
-            boost = 0.10
-            adjusted_probs[3] += boost  # spin_friendly
-            adjustments.append(f"+{boost:.0%} Spin-friendly")
-            reasons.append("Dark, bare pitch will deteriorate and spin")
-        
+
+        # Extract feature values
+        grass_pct       = features['grass_coverage']['percentage']
+        crack_severity  = features['crack_analysis']['severity']
+        crack_density   = features['crack_analysis']['density']
+        moisture_level  = features['moisture_level']['level']
+        moisture_score  = features['moisture_level']['score']
+
+        # RULE 1: High Grass → Bowling-friendly (swing for fast bowlers)
+        if grass_pct > 60:
+            adjustment = 0.15  # Strong adjustment
+            adjustments['bowling_friendly'] += adjustment
+            reasons.append(f"Heavy grass coverage ({grass_pct:.1f}%) favors fast bowlers (swing)")
+        elif grass_pct > 40:
+            adjustment = 0.08
+            adjustments['bowling_friendly'] += adjustment
+            reasons.append(f"Moderate grass ({grass_pct:.1f}%) helps bowlers")
+
+        # RULE 2: Many Cracks → Spin-friendly
+        if crack_severity in ['High', 'Medium']:
+            if crack_severity == 'High':
+                adjustment = 0.20  # Very strong adjustment
+                adjustments['spin_friendly'] += adjustment
+                reasons.append(f"Heavy cracking (severity: {crack_severity}) favors spinners")
+            else:
+                adjustment = 0.12
+                adjustments['spin_friendly'] += adjustment
+                reasons.append("Moderate cracking helps spin bowlers")
+
+        # RULE 3: Dry Pitch + Low Grass → Seam-friendly
+        if moisture_level in ['Dry', 'Slightly Damp'] and grass_pct < 30:
+            adjustment = 0.15
+            adjustments['seam_friendly'] += adjustment
+            reasons.append(f"Dry pitch ({moisture_level}) with minimal grass favors seamers")
+
+        # RULE 4: Low Cracks + Moderate Grass → Batting-friendly
+        if crack_severity in ['None', 'Low'] and 20 < grass_pct < 50:
+            adjustment = 0.10
+            adjustments['batting_friendly'] += adjustment
+            reasons.append("Minimal cracks with moderate grass favors batsmen")
+
+        # RULE 5: Very Dry + Many Cracks → Strong Spin-friendly
+        if moisture_score < 30 and crack_density > 3:
+            adjustment = 0.15
+            adjustments['spin_friendly'] += adjustment
+            reasons.append("Dry, cracked surface ideal for spin")
+
+        # RULE 6: Wet/Damp + High Grass → Strong Bowling-friendly
+        if moisture_level in ['Wet', 'Damp'] and grass_pct > 50:
+            adjustment = 0.12
+            adjustments['bowling_friendly'] += adjustment
+            reasons.append(f"Damp conditions ({moisture_level}) with grass helps swing bowlers")
+
+        # Apply all accumulated adjustments in one pass (prevents sequential skew)
+        for i, cls in enumerate(self.classes):
+            adjusted_probs[i] += adjustments[cls]
+
         # Normalize probabilities
         adjusted_probs = np.maximum(adjusted_probs, 0)
         adjusted_probs = adjusted_probs / adjusted_probs.sum()
-        
+
         # Get final prediction
         final_idx = adjusted_probs.argmax()
         final_class = self.classes[final_idx]
         final_confidence = adjusted_probs[final_idx] * 100
-        
+
         adjustment_info = {
-            "adjustments": adjustments if adjustments else ["No adjustments needed"],
-            "reasons": reasons if reasons else ["ML prediction is reliable"]
+            'adjustments': adjustments,
+            'reasons': reasons,
+            'total_adjustment': sum(abs(v) for v in adjustments.values())
         }
-        
+
         return final_class, final_confidence, adjusted_probs, adjustment_info
     
     def analyze(self, image_path: str, save_visualization: bool = False) -> Dict:
@@ -445,12 +485,27 @@ class CompletePitchPipeline:
             self.adjust_classification_with_features(ml_probs, features)
         
         print(f"   Final Prediction: {final_class} ({final_conf:.1f}%)")
-        
-        if adjustment_info['adjustments'][0] != "No adjustments needed":
+
+        # Print active adjustments (adjustments is now a dict {class: delta})
+        active_adjustments = {cls: val for cls, val in adjustment_info['adjustments'].items() if val > 0}
+        if active_adjustments:
             print("   Adjustments applied:")
-            for adj in adjustment_info['adjustments']:
-                print(f"   - {adj}")
-        
+            for cls, val in active_adjustments.items():
+                print(f"   - +{val:.0%} {cls.replace('_', ' ').title()}")
+        else:
+            print("   No feature-based adjustments applied")
+
+        if adjustment_info['reasons']:
+            print("   Reasons:")
+            for reason in adjustment_info['reasons']:
+                print(f"   • {reason}")
+
+        # Convert adjustments dict → list of human-readable strings for API response
+        adjustments_list = (
+            [f"+{val:.0%} {cls.replace('_', ' ').title()}" for cls, val in adjustment_info['adjustments'].items() if val > 0]
+            or ["No adjustments needed"]
+        )
+
         # Compile results
         results = {
             'pitch_detection': {
@@ -474,13 +529,13 @@ class CompletePitchPipeline:
                     self.classes[i]: float(final_probs[i] * 100)
                     for i in range(len(self.classes))
                 },
-                'adjustments': adjustment_info['adjustments'],
-                'reasons': adjustment_info['reasons']
+                'adjustments': adjustments_list,
+                'reasons': adjustment_info['reasons'] if adjustment_info['reasons'] else ["ML prediction is reliable"]
             }
         }
-        
+
         print(f"\n✅ Analysis complete!\n")
-        
+
         return results
     
 
