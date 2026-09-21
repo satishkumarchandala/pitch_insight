@@ -32,6 +32,7 @@ PORT = int(os.getenv("PORT", 8000))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # CORS Configuration
+<<<<<<< Updated upstream
 # Allow web frontend, mobile app (Expo), localhost for development
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
@@ -43,6 +44,13 @@ if DEBUG or "*" in ALLOWED_ORIGINS:
     ALLOWED_ORIGINS = [
         "*",  # Allow all origins
     ]
+=======
+# Allow web frontend, mobile app (Expo), and vercel deployment
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "*"
+).split(",") if os.getenv("ALLOWED_ORIGINS") != "*" else ["*"]
+>>>>>>> Stashed changes
 
 # Subscription Plans
 SUBSCRIPTION_PLANS = {
